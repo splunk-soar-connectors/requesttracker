@@ -1,6 +1,6 @@
 # File: requesttracker_connector.py
 #
-# Copyright (c) 2021 Splunk Inc.
+# Copyright (c) 2022 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -281,7 +281,11 @@ class RTConnector(BaseConnector):
             fields = {}
 
         if subject:
-            fields['Subject'] = subject
+            if "\n" in subject:
+                subject_text_list = [text.strip() for text in subject.split("\n")]
+                fields['Subject'] = " ".join(subject_text_list)
+            else:
+                fields['Subject'] = subject
 
         if fields:
 
@@ -305,7 +309,7 @@ class RTConnector(BaseConnector):
             self.save_progress('Adding comment')
 
             # Create the content dictionary
-            content = {'content': 'id: {0}\nAction: comment\nText: {1}'.format(ticket_id, comment)}
+            content = {'content': 'id: {0}\nAction: comment\nText: {1}'.format(ticket_id, comment.replace("\n", "\n "))}
 
             # Send the comment post request
             ret_val, resp_text = self._make_rest_call('ticket/{0}/comment'.format(ticket_id), action_result, data=content, method='post')
@@ -332,10 +336,14 @@ class RTConnector(BaseConnector):
         priority = param.get(RT_JSON_PRIORITY, DEFAULT_PRIORITY)
         owner = param.get(RT_JSON_OWNER)
 
+        if "\n" in subject:
+            subject_text_list = [text.strip() for text in subject.split("\n")]
+            subject = " ".join(subject_text_list)
+
         # create the content dictionary
         content = {'content':
             'Queue: {0}\nSubject: {1}\nText: {2} \n \n ---- \n {3}{4}\nPriority: {5}\nOwner: {6}'.format(
-                queue, subject, text, RT_TICKET_FOOTNOTE, self.get_container_id(), priority, owner)
+                queue, subject, text.replace("\n", "\n "), RT_TICKET_FOOTNOTE, self.get_container_id(), priority, owner)
         }
 
         ret_val, resp_text = self._make_rest_call('ticket/new', action_result, data=content, method='post')
@@ -676,10 +684,11 @@ class RTConnector(BaseConnector):
             file_info['name'] = vault_id
 
         # Create payload for request
-        content = {'content': 'Action: comment\nText: {0}\nAttachment: {1}'.format(comment, file_info['name'])}
+        content = {'content': 'Action: comment\nText: {0}\nAttachment: {1}'.format(comment.replace("\n", "\n "), file_info['name'])}
         upfile = {'attachment_1': open(file_info['path'], 'rb')}
 
-        ret_val, resp_text = self._make_rest_call("ticket/{0}/comment".format(ticket_id), action_result, data=content, files=upfile, method='post')
+        ret_val, resp_text = self._make_rest_call("ticket/{0}/comment".format(ticket_id), action_result,
+        data=content, files=upfile, method='post')
 
         if phantom.is_fail(ret_val):
             return ret_val
@@ -724,6 +733,7 @@ if __name__ == '__main__':
 
     import pudb
     import argparse
+    import sys
 
     pudb.set_trace()
 
@@ -732,12 +742,14 @@ if __name__ == '__main__':
     argparser.add_argument('input_test_json', help='Input Test JSON file')
     argparser.add_argument('-u', '--username', help='username', required=False)
     argparser.add_argument('-p', '--password', help='password', required=False)
+    argparser.add_argument('-v', '--verify', action='store_true', help='verify', required=False, default=False)
 
     args = argparser.parse_args()
     session_id = None
 
     username = args.username
     password = args.password
+    verify = args.verify
 
     if (username is not None and password is None):
 
@@ -748,7 +760,7 @@ if __name__ == '__main__':
     if (username and password):
         try:
             print("Accessing the Login page")
-            r = requests.get("https://127.0.0.1/login", verify=False)
+            r = requests.get("https://127.0.0.1/login", verify=verify)  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
             csrftoken = r.cookies['csrftoken']
 
             data = dict()
@@ -761,11 +773,13 @@ if __name__ == '__main__':
             headers['Referer'] = 'https://127.0.0.1/login'
 
             print("Logging into Platform to get the session id")
-            r2 = requests.post("https://127.0.0.1/login", verify=False, data=data, headers=headers)
+            r2 = requests.post(                           # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
+                "https://127.0.0.1/login", verify=verify, data=data, headers=headers
+            )
             session_id = r2.cookies['sessionid']
         except Exception as e:
             print("Unable to get session id from the platfrom. Error: " + str(e))
-            exit(1)
+            sys.exit(1)
 
     with open(args.input_test_json) as f:
         in_json = f.read()
@@ -782,4 +796,4 @@ if __name__ == '__main__':
         ret_val = connector._handle_action(json.dumps(in_json), None)
         print(json.dumps(json.loads(ret_val), indent=4))
 
-    exit(0)
+    sys.exit(0)

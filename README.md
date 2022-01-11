@@ -10,6 +10,14 @@ Minimum Product Version: 4\.10\.0\.40961
 
 This app allows ticket management on Request Tracker
 
+## Port Information
+The app uses HTTP/ HTTPS protocol for communicating with the RequestTracker server. Below are the default ports used by Splunk SOAR.
+
+SERVICE NAME | TRANSPORT PROTOCOL | PORT
+------------ | ------------------ | ----
+**http** | tcp | 80
+**https** | tcp | 443
+
 ### Configuration Variables
 The below configuration variables are required for this Connector to operate.  These variables are specified when configuring a Request Tracker asset in SOAR.
 
