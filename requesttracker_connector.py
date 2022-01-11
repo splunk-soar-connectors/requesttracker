@@ -15,18 +15,18 @@
 #
 #
 # Phantom imports
+import json
+import re
+
 import phantom.app as phantom
-from phantom.base_connector import BaseConnector
+import requests
 from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
 from phantom.rules import vault_info
 from phantom.vault import Vault
 
 # THIS Connector imports
 from requesttracker_consts import *
-
-import requests
-import json
-import re
 
 
 class RetVal(tuple):
@@ -731,9 +731,10 @@ class RTConnector(BaseConnector):
 
 if __name__ == '__main__':
 
-    import pudb
     import argparse
     import sys
+
+    import pudb
 
     pudb.set_trace()
 
