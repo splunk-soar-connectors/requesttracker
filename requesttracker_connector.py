@@ -317,7 +317,7 @@ class RTConnector(BaseConnector):
                 comment = comment.replace("\n", "\n ")
 
             if "\\n" in comment:
-                comment = comment.replace("\\n", "\n")
+                comment = comment.replace("\\n", "\n ")
 
             # Create the content dictionary
             content = {'content': 'id: {0}\nAction: comment\nText: {1}'.format(ticket_id, comment)}
@@ -359,7 +359,7 @@ class RTConnector(BaseConnector):
             text = text.replace("\n", "\n ")
 
         if "\\n" in text:
-            text = text.replace("\\n", "\n")
+            text = text.replace("\\n", "\n ")
 
         # create the content dictionary
         content = {'content':
@@ -697,7 +697,7 @@ class RTConnector(BaseConnector):
                 comment = comment.replace("\n", "\n ")
 
             if "\\n" in comment:
-                comment = comment.replace("\\n", "\n")
+                comment = comment.replace("\\n", "\n ")
 
         # Check for vault file
         _, _, file_info = vault_info(vault_id=vault_id, container_id=self.get_container_id())
