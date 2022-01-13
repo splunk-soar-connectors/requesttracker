@@ -1,6 +1,6 @@
 # File: requesttracker_connector.py
 #
-# Copyright (c) 2022 Splunk Inc.
+# Copyright (c) 2016-2022 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -281,11 +281,16 @@ class RTConnector(BaseConnector):
             fields = {}
 
         if subject:
+
+            fields['Subject'] = subject
+
             if "\n" in subject:
                 subject_text_list = [text.strip() for text in subject.split("\n")]
                 fields['Subject'] = " ".join(subject_text_list)
-            else:
-                fields['Subject'] = subject
+
+            if "\\n" in subject:
+                subject_text_list = [text.strip() for text in subject.split("\\n")]
+                fields['Subject'] = " ".join(subject_text_list)
 
         if fields:
 
@@ -308,8 +313,14 @@ class RTConnector(BaseConnector):
 
             self.save_progress('Adding comment')
 
+            if "\n" in comment:
+                comment = comment.replace("\n", "\n ")
+
+            if "\\n" in comment:
+                comment = comment.replace("\\n", "\n")
+
             # Create the content dictionary
-            content = {'content': 'id: {0}\nAction: comment\nText: {1}'.format(ticket_id, comment.replace("\n", "\n "))}
+            content = {'content': 'id: {0}\nAction: comment\nText: {1}'.format(ticket_id, comment)}
 
             # Send the comment post request
             ret_val, resp_text = self._make_rest_call('ticket/{0}/comment'.format(ticket_id), action_result, data=content, method='post')
@@ -340,10 +351,20 @@ class RTConnector(BaseConnector):
             subject_text_list = [text.strip() for text in subject.split("\n")]
             subject = " ".join(subject_text_list)
 
+        if "\\n" in subject:
+            subject_text_list = [text.strip() for text in subject.split("\\n")]
+            subject = " ".join(subject_text_list)
+
+        if "\n" in text:
+            text = text.replace("\n", "\n ")
+
+        if "\\n" in text:
+            text = text.replace("\\n", "\n")
+
         # create the content dictionary
         content = {'content':
             'Queue: {0}\nSubject: {1}\nText: {2} \n \n ---- \n {3}{4}\nPriority: {5}\nOwner: {6}'.format(
-                queue, subject, text.replace("\n", "\n "), RT_TICKET_FOOTNOTE, self.get_container_id(), priority, owner)
+                queue, subject, text, RT_TICKET_FOOTNOTE, self.get_container_id(), priority, owner)
         }
 
         ret_val, resp_text = self._make_rest_call('ticket/new', action_result, data=content, method='post')
@@ -671,6 +692,12 @@ class RTConnector(BaseConnector):
         # Set default comment
         if not comment:
             comment = 'File uploaded from Phantom'
+        else:
+            if "\n" in comment:
+                comment = comment.replace("\n", "\n ")
+
+            if "\\n" in comment:
+                comment = comment.replace("\\n", "\n")
 
         # Check for vault file
         _, _, file_info = vault_info(vault_id=vault_id, container_id=self.get_container_id())
@@ -684,7 +711,7 @@ class RTConnector(BaseConnector):
             file_info['name'] = vault_id
 
         # Create payload for request
-        content = {'content': 'Action: comment\nText: {0}\nAttachment: {1}'.format(comment.replace("\n", "\n "), file_info['name'])}
+        content = {'content': 'Action: comment\nText: {0}\nAttachment: {1}'.format(comment, file_info['name'])}
         upfile = {'attachment_1': open(file_info['path'], 'rb')}
 
         ret_val, resp_text = self._make_rest_call("ticket/{0}/comment".format(ticket_id), action_result,
