@@ -76,12 +76,44 @@ class RTConnector(BaseConnector):
 
         return phantom.APP_SUCCESS
 
+    def _get_error_message_from_exception(self, e):
+        """
+        Get appropriate error message from the exception.
+
+        :param e: Exception object
+        :return: error message
+        """
+        error_code = ERR_CODE_MSG
+        error_msg = ERR_MSG_UNAVAILABLE
+
+        try:
+            if hasattr(e, "args"):
+                if len(e.args) > 1:
+                    error_code = e.args[0]
+                    error_msg = e.args[1]
+                elif len(e.args) == 1:
+                    error_code = ERR_CODE_MSG
+                    error_msg = e.args[0]
+        except:
+            pass
+
+        try:
+            if error_code in ERR_CODE_MSG:
+                error_text = "Error Message: {}".format(error_msg)
+            else:
+                error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
+        except:
+            self.debug_print(PARSE_ERR_MSG)
+            error_text = PARSE_ERR_MSG
+
+        return error_text
+
     def _process_empty_reponse(self, response, action_result):
 
         if response.status_code == 200:
             return RetVal(phantom.APP_SUCCESS, {})
 
-        return RetVal(action_result.set_status(phantom.APP_ERROR, "Empty response and no information in the header"), None)
+        return RetVal(action_result.set_status(phantom.APP_ERROR, RT_ERR_EMPTY_RESPONSE.format(code=response.status_code)), None)
 
     def _process_text_response(self, response, action_result):
 
@@ -133,7 +165,8 @@ class RTConnector(BaseConnector):
         try:
             resp_json = r.json()
         except Exception as e:
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(str(e))), None)
+            error_msg = self._get_error_message_from_exception(e)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(error_msg)), None)
 
         # Please specify the status codes here
         if 200 <= r.status_code < 399:
@@ -204,7 +237,8 @@ class RTConnector(BaseConnector):
                             headers=headers,
                             params=params)
         except Exception as e:
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(str(e))), resp_json)
+            error_msg = self._get_error_message_from_exception(e)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_msg)), resp_json)
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith('content'):
             return phantom.APP_SUCCESS, r
@@ -276,7 +310,8 @@ class RTConnector(BaseConnector):
             try:
                 fields = json.loads(str(fields))
             except Exception as e:
-                return action_result.set_status(phantom.APP_ERROR, 'Fields paramter is not valid JSON', e)
+                error_msg = self._get_error_message_from_exception(e)
+                return action_result.set_status(phantom.APP_ERROR, 'Fields paramter is not valid JSON', error_msg)
         else:
             fields = {}
 
@@ -788,7 +823,8 @@ if __name__ == '__main__':
     if (username and password):
         try:
             print("Accessing the Login page")
-            r = requests.get("https://127.0.0.1/login", verify=verify)  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
+            login_url = RTConnector._get_phantom_base_url() + '/login'
+            r = requests.get(login_url, verify=verify)  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
             csrftoken = r.cookies['csrftoken']
 
             data = dict()
@@ -798,11 +834,11 @@ if __name__ == '__main__':
 
             headers = dict()
             headers['Cookie'] = 'csrftoken=' + csrftoken
-            headers['Referer'] = 'https://127.0.0.1/login'
+            headers['Referer'] = login_url
 
             print("Logging into Platform to get the session id")
             r2 = requests.post(                           # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
-                "https://127.0.0.1/login", verify=verify, data=data, headers=headers
+                login_url, verify=verify, data=data, headers=headers
             )
             session_id = r2.cookies['sessionid']
         except Exception as e:

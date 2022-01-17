@@ -12,9 +12,10 @@
 # the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 # either express or implied. See the License for the specific language governing permissions
 # and limitations under the License.
+
+# Constants relating to JSON values
 RT_JSON_DEVICE_URL = "device_url"
 RT_JSON_PRIORITY = "priority"
-
 RT_JSON_ID = "id"
 RT_JSON_ATTACHMENT = "attachment_id"
 RT_JSON_VAULT = "vault_id"
@@ -55,8 +56,14 @@ RT_USING_BASE_URL = "Using url: {base_url}"
 RT_ERR_NO_DATA_FROM_DEVICE = "Did not get valid data from device"
 RT_ERR_UPDATE_SUBJECT_FAILED = "Update of subject failed"
 RT_ERR_UPDATE_COMMENT_FAILED = "Update of comment failed"
+RT_ERR_EMPTY_RESPONSE = "Status Code {code}. Empty response and no information in the header."
 
 DEFAULT_PRIORITY = "0"
 DEFAULT_QUEUE = "1"
 RT_TICKET_FOOTNOTE = "Added by Phantom for container id: "
 PHANTOM_VAULT_DIR = "/opt/phantom/vault/tmp/"
+
+# Constants relating to 'get_error_message_from_exception'
+ERR_CODE_MSG = "Error code unavailable"
+ERR_MSG_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters."
+PARSE_ERR_MSG = "Unable to parse the error message. Please check the asset configuration and|or action parameters."
