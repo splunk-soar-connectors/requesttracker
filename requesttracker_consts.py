@@ -71,4 +71,4 @@ PARSE_ERR_MSG = "Unable to parse the error message. Please check the asset confi
 RT_SUCC_ADD_ATTACHMENT = "Attachment added successfully"
 RT_SUCC_GET_TICKET = "The ticket has been retrieved successfully"
 RT_SUCC_UPDATE_TICKET = "The ticket has been updated successfully"
-RT_SUCC_GET_ATTACHMENT = "The Attachment has been retrieved successfully"
+RT_SUCC_GET_ATTACHMENT = "The attachment has been retrieved successfully"
