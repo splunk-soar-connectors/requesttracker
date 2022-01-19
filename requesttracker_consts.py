@@ -67,3 +67,8 @@ PHANTOM_VAULT_DIR = "/opt/phantom/vault/tmp/"
 ERR_CODE_MSG = "Error code unavailable"
 ERR_MSG_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters."
 PARSE_ERR_MSG = "Unable to parse the error message. Please check the asset configuration and|or action parameters."
+
+RT_SUCC_ADD_ATTACHMENT = "Attachment added successfully"
+RT_SUCC_GET_TICKET = "The ticket has been retrieved successfully"
+RT_SUCC_UPDATE_TICKET = "The ticket has been updated successfully"
+RT_SUCC_GET_ATTACHMENT = "The Attachment has been retrieved successfully"

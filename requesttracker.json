@@ -1285,12 +1285,7 @@
                     "order": 2
                 }
             },
-            "render": {
-                "width": 12,
-                "title": "Add Attachment",
-                "type": "table",
-                "height": 5
-            },
+            "render": {},
             "output": [
                 {
                     "data_path": "action_result.status",

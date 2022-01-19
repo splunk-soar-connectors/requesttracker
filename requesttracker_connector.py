@@ -365,7 +365,10 @@ class RTConnector(BaseConnector):
 
         self.save_progress("Ticket updated")
 
-        return self._get_ticket_details(ticket_id, action_result)
+        if phantom.is_fail(self._get_ticket_details(ticket_id, action_result)):
+            return action_result.get_status()
+
+        return action_result.set_status(phantom.APP_SUCCESS, RT_SUCC_UPDATE_TICKET)
 
     def _create_ticket(self, param):
 
@@ -495,7 +498,10 @@ class RTConnector(BaseConnector):
         # get the ticket ID
         ticket_id = param[RT_JSON_ID]
 
-        return self._get_ticket_details(ticket_id, action_result)
+        if phantom.is_fail(self._get_ticket_details(ticket_id, action_result)):
+            return action_result.get_status()
+
+        return action_result.set_status(phantom.APP_SUCCESS, RT_SUCC_GET_TICKET)
 
     def _list_tickets(self, param):
 
@@ -708,7 +714,7 @@ class RTConnector(BaseConnector):
         data['md5'] = file_info['metadata']['md5']
         data['path'] = file_info['path']
 
-        return action_result.set_status(phantom.APP_SUCCESS)
+        return action_result.set_status(phantom.APP_SUCCESS, RT_SUCC_GET_ATTACHMENT)
 
     def _add_attachment(self, param):
 
@@ -755,7 +761,7 @@ class RTConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return ret_val
 
-        return action_result.set_status(phantom.APP_SUCCESS)
+        return action_result.set_status(phantom.APP_SUCCESS, RT_SUCC_ADD_ATTACHMENT)
 
     def handle_action(self, param):
         """Function that handles all the actions
