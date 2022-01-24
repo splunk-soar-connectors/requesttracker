@@ -12,6 +12,9 @@
     "product_name": "Request Tracker",
     "product_version_regex": ".*",
     "min_phantom_version": "5.0.0",
+    "latest_tested_versions": [
+        "On-prem, Version 4.2.11"
+    ],
     "fips_compliant": true,
     "logo": "logo_bestpractical.svg",
     "logo_dark": "logo_bestpractical_dark.svg",
