@@ -14,7 +14,7 @@
     "min_phantom_version": "4.10.0.40961",
     "logo": "logo_bestpractical.svg",
     "logo_dark": "logo_bestpractical_dark.svg",
-    "license": "Copyright (c) 2021-2022 Splunk Inc.",
+    "license": "Copyright (c) 2016-2022 Splunk Inc.",
     "python_version": "3",
     "fips_compliant": true,
     "configuration": {
