@@ -15,18 +15,17 @@
 #
 #
 # Phantom imports
+import json
+import re
+
 import phantom.app as phantom
-from phantom.base_connector import BaseConnector
+import requests
 from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
 from phantom.rules import vault_info
 from phantom.vault import Vault
 
-# THIS Connector imports
 from requesttracker_consts import *
-
-import requests
-import json
-import re
 
 
 class RetVal(tuple):
@@ -679,7 +678,8 @@ class RTConnector(BaseConnector):
         content = {'content': 'Action: comment\nText: {0}\nAttachment: {1}'.format(comment, file_info['name'])}
         upfile = {'attachment_1': open(file_info['path'], 'rb')}
 
-        ret_val, resp_text = self._make_rest_call("ticket/{0}/comment".format(ticket_id), action_result, data=content, files=upfile, method='post')
+        ret_val, resp_text = self._make_rest_call("ticket/{0}/comment".format(
+            ticket_id), action_result, data=content, files=upfile, method='post')
 
         if phantom.is_fail(ret_val):
             return ret_val
@@ -722,8 +722,9 @@ class RTConnector(BaseConnector):
 
 if __name__ == '__main__':
 
-    import pudb
     import argparse
+
+    import pudb
 
     pudb.set_trace()
 
