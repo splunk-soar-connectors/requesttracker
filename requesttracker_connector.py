@@ -266,29 +266,29 @@ class RTConnector(BaseConnector):
         except:
             return False
 
-    def handle_multiline_text(self, param):
+    def handle_multiline_text(self, text):
 
         # Function to handle multiline text properly
-        if "\n" in param:
-            param = param.replace("\n", "\n ")
+        if "\n" in text:
+            text = text.replace("\n", "\n ")
 
-        if "\\n" in param:
-            param = param.replace("\\n", "\n ")
+        if "\\n" in text:
+            text = text.replace("\\n", "\n ")
 
-        return param
+        return text
 
-    def handle_multiline_subject(self, param):
+    def handle_multiline_subject(self, subject):
 
         # Function to handle multiline subject properly
-        if "\n" in param:
-            subject_text_list = [text.strip() for text in param.split("\n")]
-            param = " ".join(subject_text_list)
+        if "\n" in subject:
+            subject_text_list = [text.strip() for text in subject.split("\n")]
+            subject = " ".join(subject_text_list)
 
-        if "\\n" in param:
-            subject_text_list = [text.strip() for text in param.split("\\n")]
-            param = " ".join(subject_text_list)
+        if "\\n" in subject:
+            subject_text_list = [text.strip() for text in subject.split("\\n")]
+            subject = " ".join(subject_text_list)
 
-        return param
+        return subject
 
     def _test_connectivity(self, param):
 
