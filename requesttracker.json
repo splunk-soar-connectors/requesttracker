@@ -114,7 +114,10 @@
                 },
                 {
                     "data_path": "action_result.parameter.priority",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.queue",
@@ -1288,7 +1291,12 @@
                     "order": 2
                 }
             },
-            "render": {},
+            "render": {
+                "width": 12,
+                "title": "Add Attachment",
+                "type": "table",
+                "height": 5
+            },
             "output": [
                 {
                     "data_path": "action_result.status",
@@ -1308,6 +1316,8 @@
                 {
                     "data_path": "action_result.parameter.id",
                     "data_type": "string",
+                    "column_name": "Ticket ID",
+                    "column_order": 0,
                     "contains": [
                         "rt ticket id"
                     ],
@@ -1318,6 +1328,8 @@
                 {
                     "data_path": "action_result.parameter.vault_id",
                     "data_type": "string",
+                    "column_name": "Vault ID",
+                    "column_order": 1,
                     "contains": [
                         "vault id"
                     ],

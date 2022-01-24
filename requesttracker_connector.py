@@ -95,7 +95,7 @@ class RTConnector(BaseConnector):
                     error_code = ERR_CODE_MSG
                     error_msg = e.args[0]
         except:
-            pass
+            self.debug_print("Error occurred while retrieving exception information")
 
         try:
             if error_code in ERR_CODE_MSG:
@@ -266,6 +266,30 @@ class RTConnector(BaseConnector):
         except:
             return False
 
+    def handle_multiline_text(self, param):
+
+        # Function to handle multiline text properly
+        if "\n" in param:
+            param = param.replace("\n", "\n ")
+
+        if "\\n" in param:
+            param = param.replace("\\n", "\n ")
+
+        return param
+
+    def handle_multiline_subject(self, param):
+
+        # Function to handle multiline subject properly
+        if "\n" in param:
+            subject_text_list = [text.strip() for text in param.split("\n")]
+            param = " ".join(subject_text_list)
+
+        if "\\n" in param:
+            subject_text_list = [text.strip() for text in param.split("\\n")]
+            param = " ".join(subject_text_list)
+
+        return param
+
     def _test_connectivity(self, param):
 
         action_result = self.add_action_result(ActionResult(param))
@@ -317,15 +341,7 @@ class RTConnector(BaseConnector):
 
         if subject:
 
-            fields['Subject'] = subject
-
-            if "\n" in subject:
-                subject_text_list = [text.strip() for text in subject.split("\n")]
-                fields['Subject'] = " ".join(subject_text_list)
-
-            if "\\n" in subject:
-                subject_text_list = [text.strip() for text in subject.split("\\n")]
-                fields['Subject'] = " ".join(subject_text_list)
+            fields['Subject'] = self.handle_multiline_subject(subject)
 
         if fields:
 
@@ -348,11 +364,7 @@ class RTConnector(BaseConnector):
 
             self.save_progress('Adding comment')
 
-            if "\n" in comment:
-                comment = comment.replace("\n", "\n ")
-
-            if "\\n" in comment:
-                comment = comment.replace("\\n", "\n ")
+            comment = self.handle_multiline_text(comment)
 
             # Create the content dictionary
             content = {'content': 'id: {0}\nAction: comment\nText: {1}'.format(ticket_id, comment)}
@@ -385,19 +397,8 @@ class RTConnector(BaseConnector):
         priority = param.get(RT_JSON_PRIORITY, DEFAULT_PRIORITY)
         owner = param.get(RT_JSON_OWNER)
 
-        if "\n" in subject:
-            subject_text_list = [text.strip() for text in subject.split("\n")]
-            subject = " ".join(subject_text_list)
-
-        if "\\n" in subject:
-            subject_text_list = [text.strip() for text in subject.split("\\n")]
-            subject = " ".join(subject_text_list)
-
-        if "\n" in text:
-            text = text.replace("\n", "\n ")
-
-        if "\\n" in text:
-            text = text.replace("\\n", "\n ")
+        subject = self.handle_multiline_subject(subject)
+        text = self.handle_multiline_text(text)
 
         # create the content dictionary
         content = {'content':
@@ -734,11 +735,7 @@ class RTConnector(BaseConnector):
         if not comment:
             comment = 'File uploaded from Phantom'
         else:
-            if "\n" in comment:
-                comment = comment.replace("\n", "\n ")
-
-            if "\\n" in comment:
-                comment = comment.replace("\\n", "\n ")
+            comment = self.handle_multiline_text(comment)
 
         # Check for vault file
         _, _, file_info = vault_info(vault_id=vault_id, container_id=self.get_container_id())
@@ -843,7 +840,7 @@ if __name__ == '__main__':
             headers['Referer'] = login_url
 
             print("Logging into Platform to get the session id")
-            r2 = requests.post(                           # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
+            r2 = requests.post(  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
                 login_url, verify=verify, data=data, headers=headers
             )
             session_id = r2.cookies['sessionid']
