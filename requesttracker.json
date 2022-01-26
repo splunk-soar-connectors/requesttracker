@@ -14,8 +14,9 @@
     "min_phantom_version": "4.10.0.40961",
     "logo": "logo_bestpractical.svg",
     "logo_dark": "logo_bestpractical_dark.svg",
-    "license": "Copyright (c) 2021 Splunk Inc.",
+    "license": "Copyright (c) 2016-2022 Splunk Inc.",
     "python_version": "3",
+    "fips_compliant": true,
     "configuration": {
         "device_url": {
             "data_type": "string",
@@ -1022,7 +1023,7 @@
             },
             {
                 "module": "urllib3",
-                "input_file": "wheels/urllib3-1.26.7-py2.py3-none-any.whl"
+                "input_file": "wheels/urllib3-1.26.8-py2.py3-none-any.whl"
             }
         ]
     }
