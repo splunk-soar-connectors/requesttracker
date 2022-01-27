@@ -333,6 +333,8 @@ class RTConnector(BaseConnector):
         if fields:
             try:
                 fields = json.loads(str(fields))
+                if isinstance(fields, list):
+                    fields = {key: value for x in fields for key, value in x.items()}
             except Exception as e:
                 error_msg = self._get_error_message_from_exception(e)
                 return action_result.set_status(phantom.APP_ERROR, 'Fields paramter is not valid JSON', error_msg)
