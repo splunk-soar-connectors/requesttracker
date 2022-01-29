@@ -2,11 +2,11 @@
 # Request Tracker
 
 Publisher: Splunk  
-Connector Version: 2\.0\.3  
+Connector Version: 2\.0\.6  
 Product Vendor: Best Practical Solutions  
 Product Name: Request Tracker  
 Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 4\.10\.0\.40961  
+Minimum Product Version: 5\.1\.0  
 
 This app allows ticket management on Request Tracker
 
