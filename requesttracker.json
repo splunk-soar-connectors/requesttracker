@@ -11,7 +11,7 @@
     "product_vendor": "Best Practical Solutions",
     "product_name": "Request Tracker",
     "product_version_regex": ".*",
-    "min_phantom_version": "5.0.0",
+    "min_phantom_version": "5.1.0",
     "latest_tested_versions": [
         "On-prem, Version 4.2.11"
     ],
@@ -20,6 +20,7 @@
     "logo_dark": "logo_bestpractical_dark.svg",
     "license": "Copyright (c) 2016-2022 Splunk Inc.",
     "python_version": "3",
+    "fips_compliant": true,
     "configuration": {
         "device_url": {
             "data_type": "string",
@@ -1387,7 +1388,7 @@
             },
             {
                 "module": "urllib3",
-                "input_file": "wheels/urllib3-1.26.7-py2.py3-none-any.whl"
+                "input_file": "wheels/urllib3-1.26.8-py2.py3-none-any.whl"
             }
         ]
     }

@@ -25,7 +25,6 @@ from phantom.base_connector import BaseConnector
 from phantom.rules import vault_info
 from phantom.vault import Vault
 
-# THIS Connector imports
 from requesttracker_consts import *
 
 
@@ -754,8 +753,8 @@ class RTConnector(BaseConnector):
         content = {'content': 'Action: comment\nText: {0}\nAttachment: {1}'.format(comment, file_info['name'])}
         upfile = {'attachment_1': open(file_info['path'], 'rb')}
 
-        ret_val, resp_text = self._make_rest_call("ticket/{0}/comment".format(ticket_id), action_result,
-        data=content, files=upfile, method='post')
+        ret_val, resp_text = self._make_rest_call("ticket/{0}/comment".format(
+            ticket_id), action_result, data=content, files=upfile, method='post')
 
         if phantom.is_fail(ret_val):
             return ret_val
@@ -803,6 +802,8 @@ if __name__ == '__main__':
 
     import pudb
 
+    import pudb
+
     pudb.set_trace()
 
     argparser = argparse.ArgumentParser()
@@ -829,7 +830,7 @@ if __name__ == '__main__':
         try:
             print("Accessing the Login page")
             login_url = RTConnector._get_phantom_base_url() + '/login'
-            r = requests.get(login_url, verify=verify)  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
+            r = requests.get(login_url, verify=verify, timeout=DEFAULT_TIMEOUT)
             csrftoken = r.cookies['csrftoken']
 
             data = dict()
@@ -842,9 +843,7 @@ if __name__ == '__main__':
             headers['Referer'] = login_url
 
             print("Logging into Platform to get the session id")
-            r2 = requests.post(  # nosemgrep: python.requests.best-practice.use-timeout.use-timeout
-                login_url, verify=verify, data=data, headers=headers
-            )
+            r2 = requests.post(login_url, verify=verify, timeout=DEFAULT_TIMEOUT, data=data, headers=headers)
             session_id = r2.cookies['sessionid']
         except Exception as e:
             print("Unable to get session id from the platfrom. Error: " + str(e))
