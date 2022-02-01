@@ -713,8 +713,10 @@ class RTConnector(BaseConnector):
         data['size'] = file_info['size']
         data['sha1'] = file_info['metadata']['sha1']
         data['sha256'] = file_info['metadata']['sha256']
-        data['md5'] = file_info['metadata']['md5']
         data['path'] = file_info['path']
+
+        if file_info['metadata'].get('md5'):
+            data['md5'] = file_info['metadata']['md5']
 
         return action_result.set_status(phantom.APP_SUCCESS, RT_SUCC_GET_ATTACHMENT)
 
