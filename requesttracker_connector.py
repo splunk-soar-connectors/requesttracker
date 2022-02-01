@@ -75,12 +75,44 @@ class RTConnector(BaseConnector):
 
         return phantom.APP_SUCCESS
 
+    def _get_error_message_from_exception(self, e):
+        """
+        Get appropriate error message from the exception.
+
+        :param e: Exception object
+        :return: error message
+        """
+        error_code = ERR_CODE_MSG
+        error_msg = ERR_MSG_UNAVAILABLE
+
+        try:
+            if hasattr(e, "args"):
+                if len(e.args) > 1:
+                    error_code = e.args[0]
+                    error_msg = e.args[1]
+                elif len(e.args) == 1:
+                    error_code = ERR_CODE_MSG
+                    error_msg = e.args[0]
+        except:
+            self.debug_print("Error occurred while retrieving exception information")
+
+        try:
+            if error_code in ERR_CODE_MSG:
+                error_text = "Error Message: {}".format(error_msg)
+            else:
+                error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
+        except:
+            self.debug_print(PARSE_ERR_MSG)
+            error_text = PARSE_ERR_MSG
+
+        return error_text
+
     def _process_empty_reponse(self, response, action_result):
 
         if response.status_code == 200:
             return RetVal(phantom.APP_SUCCESS, {})
 
-        return RetVal(action_result.set_status(phantom.APP_ERROR, "Empty response and no information in the header"), None)
+        return RetVal(action_result.set_status(phantom.APP_ERROR, RT_ERR_EMPTY_RESPONSE.format(code=response.status_code)), None)
 
     def _process_text_response(self, response, action_result):
 
@@ -132,7 +164,8 @@ class RTConnector(BaseConnector):
         try:
             resp_json = r.json()
         except Exception as e:
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(str(e))), None)
+            error_msg = self._get_error_message_from_exception(e)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(error_msg)), None)
 
         # Please specify the status codes here
         if 200 <= r.status_code < 399:
@@ -203,7 +236,8 @@ class RTConnector(BaseConnector):
                             headers=headers,
                             params=params)
         except Exception as e:
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(str(e))), resp_json)
+            error_msg = self._get_error_message_from_exception(e)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_msg)), resp_json)
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith('content'):
             return phantom.APP_SUCCESS, r
@@ -230,6 +264,30 @@ class RTConnector(BaseConnector):
                 return False
         except:
             return False
+
+    def handle_multiline_text(self, text):
+
+        # Function to handle multiline text properly
+        if "\n" in text:
+            text = text.replace("\n", "\n ")
+
+        if "\\n" in text:
+            text = text.replace("\\n", "\n ")
+
+        return text
+
+    def handle_multiline_subject(self, subject):
+
+        # Function to handle multiline subject properly
+        if "\n" in subject:
+            subject_text_list = [text.strip() for text in subject.split("\n")]
+            subject = " ".join(subject_text_list)
+
+        if "\\n" in subject:
+            subject_text_list = [text.strip() for text in subject.split("\\n")]
+            subject = " ".join(subject_text_list)
+
+        return subject
 
     def _test_connectivity(self, param):
 
@@ -274,13 +332,17 @@ class RTConnector(BaseConnector):
         if fields:
             try:
                 fields = json.loads(str(fields))
+                if isinstance(fields, list):
+                    fields = {key: value for x in fields for key, value in x.items()}
             except Exception as e:
-                return action_result.set_status(phantom.APP_ERROR, 'Fields paramter is not valid JSON', e)
+                error_msg = self._get_error_message_from_exception(e)
+                return action_result.set_status(phantom.APP_ERROR, 'Fields paramter is not valid JSON', error_msg)
         else:
             fields = {}
 
         if subject:
-            fields['Subject'] = subject
+
+            fields['Subject'] = self.handle_multiline_subject(subject)
 
         if fields:
 
@@ -303,6 +365,8 @@ class RTConnector(BaseConnector):
 
             self.save_progress('Adding comment')
 
+            comment = self.handle_multiline_text(comment)
+
             # Create the content dictionary
             content = {'content': 'id: {0}\nAction: comment\nText: {1}'.format(ticket_id, comment)}
 
@@ -314,7 +378,10 @@ class RTConnector(BaseConnector):
 
         self.save_progress("Ticket updated")
 
-        return self._get_ticket_details(ticket_id, action_result)
+        if phantom.is_fail(self._get_ticket_details(ticket_id, action_result)):
+            return action_result.get_status()
+
+        return action_result.set_status(phantom.APP_SUCCESS, RT_SUCC_UPDATE_TICKET)
 
     def _create_ticket(self, param):
 
@@ -330,6 +397,9 @@ class RTConnector(BaseConnector):
         text = param[RT_JSON_TEXT]
         priority = param.get(RT_JSON_PRIORITY, DEFAULT_PRIORITY)
         owner = param.get(RT_JSON_OWNER)
+
+        subject = self.handle_multiline_subject(subject)
+        text = self.handle_multiline_text(text)
 
         # create the content dictionary
         content = {'content':
@@ -430,7 +500,10 @@ class RTConnector(BaseConnector):
         # get the ticket ID
         ticket_id = param[RT_JSON_ID]
 
-        return self._get_ticket_details(ticket_id, action_result)
+        if phantom.is_fail(self._get_ticket_details(ticket_id, action_result)):
+            return action_result.get_status()
+
+        return action_result.set_status(phantom.APP_SUCCESS, RT_SUCC_GET_TICKET)
 
     def _list_tickets(self, param):
 
@@ -640,10 +713,12 @@ class RTConnector(BaseConnector):
         data['size'] = file_info['size']
         data['sha1'] = file_info['metadata']['sha1']
         data['sha256'] = file_info['metadata']['sha256']
-        data['md5'] = file_info['metadata']['md5']
         data['path'] = file_info['path']
 
-        return action_result.set_status(phantom.APP_SUCCESS)
+        if file_info['metadata'].get('md5'):
+            data['md5'] = file_info['metadata']['md5']
+
+        return action_result.set_status(phantom.APP_SUCCESS, RT_SUCC_GET_ATTACHMENT)
 
     def _add_attachment(self, param):
 
@@ -662,6 +737,8 @@ class RTConnector(BaseConnector):
         # Set default comment
         if not comment:
             comment = 'File uploaded from Phantom'
+        else:
+            comment = self.handle_multiline_text(comment)
 
         # Check for vault file
         _, _, file_info = vault_info(vault_id=vault_id, container_id=self.get_container_id())
@@ -684,7 +761,7 @@ class RTConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return ret_val
 
-        return action_result.set_status(phantom.APP_SUCCESS)
+        return action_result.set_status(phantom.APP_SUCCESS, RT_SUCC_ADD_ATTACHMENT)
 
     def handle_action(self, param):
         """Function that handles all the actions
@@ -723,6 +800,7 @@ class RTConnector(BaseConnector):
 if __name__ == '__main__':
 
     import argparse
+    import sys
 
     import pudb
 
@@ -751,7 +829,8 @@ if __name__ == '__main__':
     if (username and password):
         try:
             print("Accessing the Login page")
-            r = requests.get("https://127.0.0.1/login", verify=verify, timeout=DEFAULT_TIMEOUT)
+            login_url = RTConnector._get_phantom_base_url() + '/login'
+            r = requests.get(login_url, verify=verify, timeout=DEFAULT_TIMEOUT)
             csrftoken = r.cookies['csrftoken']
 
             data = dict()
@@ -761,10 +840,10 @@ if __name__ == '__main__':
 
             headers = dict()
             headers['Cookie'] = 'csrftoken=' + csrftoken
-            headers['Referer'] = 'https://127.0.0.1/login'
+            headers['Referer'] = login_url
 
             print("Logging into Platform to get the session id")
-            r2 = requests.post("https://127.0.0.1/login", verify=verify, timeout=DEFAULT_TIMEOUT, data=data, headers=headers)
+            r2 = requests.post(login_url, verify=verify, timeout=DEFAULT_TIMEOUT, data=data, headers=headers)
             session_id = r2.cookies['sessionid']
         except Exception as e:
             print("Unable to get session id from the platfrom. Error: " + str(e))
