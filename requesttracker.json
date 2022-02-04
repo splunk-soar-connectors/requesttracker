@@ -5,16 +5,20 @@
     "publisher": "Splunk",
     "type": "ticketing",
     "main_module": "requesttracker_connector.py",
-    "app_version": "2.0.2",
-    "utctime_updated": "2021-04-21T03:43:19.000000Z",
+    "app_version": "2.1.2",
+    "utctime_updated": "2022-02-02T09:20:19.000000Z",
     "package_name": "phantom_requesttracker",
     "product_vendor": "Best Practical Solutions",
     "product_name": "Request Tracker",
     "product_version_regex": ".*",
-    "min_phantom_version": "4.10.0.40961",
+    "min_phantom_version": "5.1.0",
+    "latest_tested_versions": [
+        "On-prem, Version 4.2.11"
+    ],
+    "fips_compliant": true,
     "logo": "logo_bestpractical.svg",
     "logo_dark": "logo_bestpractical_dark.svg",
-    "license": "Copyright (c) 2021 Splunk Inc.",
+    "license": "Copyright (c) 2016-2022 Splunk Inc.",
     "python_version": "3",
     "configuration": {
         "device_url": {
@@ -30,14 +34,12 @@
         "username": {
             "data_type": "string",
             "order": 2,
-            "description": "Username",
-            "required": false
+            "description": "Username"
         },
         "password": {
             "data_type": "password",
             "order": 3,
-            "description": "Password",
-            "required": false
+            "description": "Password"
         }
     },
     "actions": [
@@ -65,7 +67,6 @@
                     "contains": [
                         "rt queue"
                     ],
-                    "required": false,
                     "primary": true
                 },
                 "subject": {
@@ -84,14 +85,12 @@
                     "description": "Priority of the ticket",
                     "data_type": "string",
                     "order": 3,
-                    "required": false,
                     "default": 0
                 },
                 "owner": {
                     "description": "Owner (Assigned to)",
                     "data_type": "string",
-                    "order": 4,
-                    "required": false
+                    "order": 4
                 }
             },
             "render": {
@@ -103,7 +102,11 @@
             "output": [
                 {
                     "data_path": "action_result.status",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.owner",
@@ -111,7 +114,10 @@
                 },
                 {
                     "data_path": "action_result.parameter.priority",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.queue",
@@ -122,50 +128,74 @@
                 },
                 {
                     "data_path": "action_result.parameter.subject",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Test Subject"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.text",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Test Text"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.id",
                     "data_type": "string",
-                    "column_name": "Id",
+                    "column_name": "ID",
                     "column_order": 0,
                     "contains": [
                         "rt ticket id"
+                    ],
+                    "example_values": [
+                        "4229"
                     ]
                 },
                 {
                     "data_path": "action_result.data.*.subject",
                     "data_type": "string",
                     "column_name": "Subject",
-                    "column_order": 1
+                    "column_order": 1,
+                    "example_values": [
+                        "Test Subject"
+                    ]
                 },
                 {
                     "data_path": "action_result.summary.new_ticket_id",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "4229"
+                    ]
                 },
                 {
                     "data_path": "action_result.message",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "New ticket id: 4229"
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects_successful",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 }
             ],
             "versions": "EQ(*)"
         },
         {
             "action": "update ticket",
-            "description": "Updates an existing ticket",
-            "verbose": "Use this action to set the <b>subject</b> or add a <b>comment</b> to an existing ticket. If the <b>subject</b> paramter is set and the <b>fields</b> parameter contains a subject field, the <b>subject</b> parameter will take priority.",
+            "description": "Update an existing ticket",
+            "verbose": "Use this action to set the <b>subject</b> or add a <b>comment</b> to an existing ticket. If the <b>subject</b> paramter is set and the <b>fields</b> parameter contains a subject field, the <b>subject</b> parameter will take priority. The <b>fields parameter</b> is provided to allow flexibility in updating a ticket. The parameter allows you to update all fields exposed via the request tracker API. In order to look at available fields, please visit the API documentation at https://rt-wiki.bestpractical.com/wiki/REST#Ticket_Create. Data needs to be in valid JSON format. Example: {\"Status\": \"open\"}. If unknown fields are included, the action will pass, but the unknown fields will be logged.",
             "type": "generic",
             "identifier": "update_ticket",
             "read_only": false,
@@ -183,21 +213,17 @@
                 "fields": {
                     "description": "Fields to update (JSON format)",
                     "data_type": "string",
-                    "verbose": "The <b>fields parameter</b> is provided to allow flexibility in updating a ticket. The parameter allows you to update all fields exposed via the request tracker API. In order to look at available fields, please visit the API documentation at https://rt-wiki.bestpractical.com/wiki/REST#Ticket_Create. Data needs to be in valid JSON format. Example: {\"Status\": \"open\"}. If unknown fields are included, the action will pass, but the unknown fields will be logged.",
-                    "order": 1,
-                    "required": false
+                    "order": 1
                 },
                 "comment": {
                     "description": "Comment to add to ticket history",
                     "data_type": "string",
-                    "order": 2,
-                    "required": false
+                    "order": 2
                 },
                 "subject": {
                     "description": "Subject of ticket to be updated",
                     "data_type": "string",
-                    "order": 3,
-                    "required": false
+                    "order": 3
                 }
             },
             "render": {
@@ -217,7 +243,10 @@
                 },
                 {
                     "data_path": "action_result.parameter.comment",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Test comment"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.fields",
@@ -228,11 +257,17 @@
                     "data_type": "string",
                     "contains": [
                         "rt ticket id"
+                    ],
+                    "example_values": [
+                        "4190"
                     ]
                 },
                 {
                     "data_path": "action_result.parameter.subject",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Test Subject"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.admin_cc",
@@ -244,54 +279,81 @@
                 },
                 {
                     "data_path": "action_result.data.*.created",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Thu Jan 13 00:48:36 2022"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.creator",
                     "data_type": "string",
                     "column_name": "Creator",
-                    "column_order": 5
+                    "column_order": 5,
+                    "example_values": [
+                        "root"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.due",
                     "data_type": "string",
                     "column_name": "Due",
-                    "column_order": 6
+                    "column_order": 6,
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.final_Priority",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.id",
                     "data_type": "string",
-                    "column_name": "Id",
+                    "column_name": "ID",
                     "column_order": 0,
                     "contains": [
                         "rt ticket id"
+                    ],
+                    "example_values": [
+                        "4190"
                     ]
                 },
                 {
                     "data_path": "action_result.data.*.initial_priority",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.owner",
                     "data_type": "string",
                     "column_name": "Owner",
-                    "column_order": 3
+                    "column_order": 3,
+                    "example_values": [
+                        "Nobody"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.priority",
                     "data_type": "string",
                     "column_name": "Priority",
-                    "column_order": 7
+                    "column_order": 7,
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.queue",
                     "data_type": "string",
                     "column_name": "Queue",
-                    "column_order": 1
+                    "column_order": 1,
+                    "example_values": [
+                        "General"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.requestors",
@@ -301,47 +363,74 @@
                     "data_path": "action_result.data.*.resolved",
                     "data_type": "string",
                     "column_name": "Resolved",
-                    "column_order": 4
+                    "column_order": 4,
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.started",
                     "data_type": "string",
                     "column_name": "Started",
-                    "column_order": 9
+                    "column_order": 9,
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.starts",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.status",
                     "data_type": "string",
                     "column_name": "Status",
-                    "column_order": 8
+                    "column_order": 8,
+                    "example_values": [
+                        "new"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.subject",
                     "data_type": "string",
                     "column_name": "Subject",
-                    "column_order": 2
+                    "column_order": 2,
+                    "example_values": [
+                        "Test Subject"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.time_estimated",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.time_left",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.time_worked",
                     "data_type": "string",
                     "column_name": "Time Worked",
-                    "column_order": 10
+                    "column_order": 10,
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.told",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.summary",
@@ -353,11 +442,17 @@
                 },
                 {
                     "data_path": "summary.total_objects",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects_successful",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 }
             ],
             "versions": "EQ(*)"
@@ -395,69 +490,114 @@
             "output": [
                 {
                     "data_path": "action_result.status",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.query",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "subject LIKE \"Test\""
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.queue",
                     "data_type": "string",
                     "contains": [
                         "rt queue"
+                    ],
+                    "example_values": [
+                        "1"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.created",
+                    "data_path": "action_result.data.*.admin_cc",
                     "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.cc",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.created",
+                    "data_type": "string",
+                    "example_values": [
+                        "Mon Feb 08 23:47:48 2021"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.creator",
                     "data_type": "string",
                     "column_name": "Creator",
-                    "column_order": 5
+                    "column_order": 5,
+                    "example_values": [
+                        "root"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.due",
                     "data_type": "string",
                     "column_name": "Due",
-                    "column_order": 6
+                    "column_order": 6,
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.final_Priority",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.id",
                     "data_type": "string",
-                    "column_name": "Id",
+                    "column_name": "ID",
                     "column_order": 0,
                     "contains": [
                         "rt ticket id"
+                    ],
+                    "example_values": [
+                        "660"
                     ]
                 },
                 {
                     "data_path": "action_result.data.*.initial_priority",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.owner",
                     "data_type": "string",
                     "column_name": "Owner",
-                    "column_order": 3
+                    "column_order": 3,
+                    "example_values": [
+                        "root"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.priority",
                     "data_type": "string",
                     "column_name": "Priority",
-                    "column_order": 7
+                    "column_order": 7,
+                    "example_values": [
+                        "2"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.queue",
                     "data_type": "string",
                     "column_name": "Queue",
-                    "column_order": 1
+                    "column_order": 1,
+                    "example_values": [
+                        "General"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.requestors",
@@ -467,63 +607,102 @@
                     "data_path": "action_result.data.*.resolved",
                     "data_type": "string",
                     "column_name": "Resolved",
-                    "column_order": 4
+                    "column_order": 4,
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.started",
                     "data_type": "string",
                     "column_name": "Started",
-                    "column_order": 9
+                    "column_order": 9,
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.starts",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.status",
                     "data_type": "string",
                     "column_name": "Status",
-                    "column_order": 8
+                    "column_order": 8,
+                    "example_values": [
+                        "new"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.subject",
                     "data_type": "string",
                     "column_name": "Subject",
-                    "column_order": 2
+                    "column_order": 2,
+                    "example_values": [
+                        "Test Subject"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.time_estimated",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.time_left",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.time_worked",
                     "data_type": "string",
                     "column_name": "Time Worked",
-                    "column_order": 10
+                    "column_order": 10,
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.told",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.summary.total_issues",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        2
+                    ]
                 },
                 {
                     "data_path": "action_result.message",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Total issues: 2"
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects_successful",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 }
             ],
             "versions": "EQ(*)"
@@ -555,65 +734,107 @@
             "output": [
                 {
                     "data_path": "action_result.status",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.id",
                     "data_type": "string",
                     "contains": [
                         "rt ticket id"
+                    ],
+                    "example_values": [
+                        "665"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.created",
+                    "data_path": "action_result.data.*.admin_cc",
                     "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.cc",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.created",
+                    "data_type": "string",
+                    "example_values": [
+                        "Wed Mar 10 19:54:20 2021"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.creator",
                     "data_type": "string",
                     "column_name": "Creator",
-                    "column_order": 5
+                    "column_order": 5,
+                    "example_values": [
+                        "root"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.due",
                     "data_type": "string",
                     "column_name": "Due",
-                    "column_order": 6
+                    "column_order": 6,
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.final_Priority",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.id",
                     "data_type": "string",
-                    "column_name": "Id",
+                    "column_name": "ID",
                     "column_order": 0,
                     "contains": [
                         "rt ticket id"
+                    ],
+                    "example_values": [
+                        "665"
                     ]
                 },
                 {
                     "data_path": "action_result.data.*.initial_priority",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.owner",
                     "data_type": "string",
                     "column_name": "Owner",
-                    "column_order": 3
+                    "column_order": 3,
+                    "example_values": [
+                        "Nobody"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.priority",
                     "data_type": "string",
                     "column_name": "Priority",
-                    "column_order": 7
+                    "column_order": 7,
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.queue",
                     "data_type": "string",
                     "column_name": "Queue",
-                    "column_order": 1
+                    "column_order": 1,
+                    "example_values": [
+                        "General"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.requestors",
@@ -623,47 +844,74 @@
                     "data_path": "action_result.data.*.resolved",
                     "data_type": "string",
                     "column_name": "Resolved",
-                    "column_order": 4
+                    "column_order": 4,
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.started",
                     "data_type": "string",
                     "column_name": "Started",
-                    "column_order": 9
+                    "column_order": 9,
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.starts",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.status",
                     "data_type": "string",
                     "column_name": "Status",
-                    "column_order": 8
+                    "column_order": 8,
+                    "example_values": [
+                        "new"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.subject",
                     "data_type": "string",
                     "column_name": "Subject",
-                    "column_order": 2
+                    "column_order": 2,
+                    "example_values": [
+                        "Test Subject"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.time_estimated",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.time_left",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.time_worked",
                     "data_type": "string",
                     "column_name": "Time Worked",
-                    "column_order": 10
+                    "column_order": 10,
+                    "example_values": [
+                        "0"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.told",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Not set"
+                    ]
                 },
                 {
                     "data_path": "action_result.summary.total_issues",
@@ -675,11 +923,17 @@
                 },
                 {
                     "data_path": "summary.total_objects",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects_successful",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 }
             ],
             "versions": "EQ(*)"
@@ -711,54 +965,79 @@
             "output": [
                 {
                     "data_path": "action_result.status",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.id",
                     "data_type": "string",
                     "contains": [
                         "rt ticket id"
+                    ],
+                    "example_values": [
+                        "665"
                     ]
                 },
                 {
                     "data_path": "action_result.data.*.attachment_id",
                     "data_type": "string",
-                    "column_name": "Attachment Id",
+                    "column_name": "Attachment ID",
                     "column_order": 1,
                     "contains": [
                         "rt attachment id"
+                    ],
+                    "example_values": [
+                        "876"
                     ]
                 },
                 {
                     "data_path": "action_result.data.*.content_type",
                     "data_type": "string",
-                    "column_name": "Content-Type",
-                    "column_order": 3
+                    "column_name": "Content Type",
+                    "column_order": 3,
+                    "example_values": [
+                        "text/plain"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.path",
                     "data_type": "string",
                     "column_name": "Path",
-                    "column_order": 2
+                    "column_order": 2,
+                    "example_values": [
+                        "(Unnamed)"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.size",
                     "data_type": "string",
                     "column_name": "Size",
-                    "column_order": 4
+                    "column_order": 4,
+                    "example_values": [
+                        "88b"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.ticket_id",
                     "data_type": "string",
-                    "column_name": "Ticket Id",
+                    "column_name": "Ticket ID",
                     "column_order": 0,
                     "contains": [
                         "rt ticket id"
+                    ],
+                    "example_values": [
+                        "665"
                     ]
                 },
                 {
                     "data_path": "action_result.summary.attachments",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 },
                 {
                     "data_path": "action_result.summary.failed_tickets",
@@ -770,15 +1049,24 @@
                 },
                 {
                     "data_path": "action_result.message",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Attachments: 1"
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects_successful",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 }
             ],
             "versions": "EQ(*)"
@@ -820,13 +1108,20 @@
             "output": [
                 {
                     "data_path": "action_result.status",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.attachment_id",
                     "data_type": "string",
                     "contains": [
                         "rt attachment id"
+                    ],
+                    "example_values": [
+                        "876"
                     ]
                 },
                 {
@@ -834,67 +1129,109 @@
                     "data_type": "string",
                     "contains": [
                         "rt ticket id"
+                    ],
+                    "example_values": [
+                        "665"
                     ]
                 },
                 {
                     "data_path": "action_result.data.*.attachment_id",
                     "data_type": "string",
-                    "column_name": "Attachment Id",
+                    "column_name": "Attachment ID",
                     "column_order": 1,
                     "contains": [
                         "rt attachment id"
+                    ],
+                    "example_values": [
+                        "876"
                     ]
                 },
                 {
                     "data_path": "action_result.data.*.id",
                     "data_type": "string",
-                    "column_name": "Id",
+                    "column_name": "ID",
                     "column_order": 0,
                     "contains": [
                         "rt ticket id"
+                    ],
+                    "example_values": [
+                        "665"
                     ]
                 },
                 {
                     "data_path": "action_result.data.*.md5",
                     "data_type": "string",
                     "column_name": "MD5",
-                    "column_order": 7
+                    "column_order": 7,
+                    "example_values": [
+                        "00ac4b437639520bb2f7f891ffb1b66e"
+                    ],
+                    "contains": [
+                        "md5"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.name",
                     "data_type": "string",
                     "column_name": "Name",
-                    "column_order": 3
+                    "column_order": 3,
+                    "example_values": [
+                        "Test Name"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.path",
                     "data_type": "string",
                     "column_name": "Path",
-                    "column_order": 8
+                    "column_order": 8,
+                    "example_values": [
+                        "/opt/phantom/vault/41/e0/41e049c4c6aaa5a53f4c3f8e4f64d1d89f8300a3"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.sha1",
                     "data_type": "string",
                     "column_name": "SHA1",
-                    "column_order": 5
+                    "column_order": 5,
+                    "example_values": [
+                        "41e049c4c6aaa5a53f4c3f8e4f64d1d89f8300a3"
+                    ],
+                    "contains": [
+                        "sha1"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.sha256",
                     "data_type": "string",
                     "column_name": "SHA256",
-                    "column_order": 6
+                    "column_order": 6,
+                    "example_values": [
+                        "c34ff9d842a0c7bbfd64bedcd6c73ace44624b36c882b296b9778887ed862917"
+                    ],
+                    "contains": [
+                        "sha256"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.size",
                     "data_type": "string",
                     "column_name": "Size",
-                    "column_order": 4
+                    "column_order": 4,
+                    "example_values": [
+                        "88"
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.vault_id",
                     "data_type": "string",
-                    "column_name": "Vault id",
-                    "column_order": 2
+                    "column_name": "Vault ID",
+                    "column_order": 2,
+                    "example_values": [
+                        "41e049c4c6aaa5a53f4c3f8e4f64d1d89f8300a3"
+                    ],
+                    "contains": [
+                        "vault id"
+                    ]
                 },
                 {
                     "data_path": "action_result.summary.attachments",
@@ -906,18 +1243,24 @@
                 },
                 {
                     "data_path": "summary.total_objects",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects_successful",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 }
             ],
             "versions": "EQ(*)"
         },
         {
             "action": "add attachment",
-            "description": "Uploads vaulted file as attachment to ticket",
+            "description": "Upload vaulted file as attachment to ticket",
             "type": "generic",
             "identifier": "add_attachment",
             "read_only": false,
@@ -945,8 +1288,7 @@
                 "comment": {
                     "description": "Comment to include with upload",
                     "data_type": "string",
-                    "order": 2,
-                    "required": false
+                    "order": 2
                 }
             },
             "render": {
@@ -958,25 +1300,42 @@
             "output": [
                 {
                     "data_path": "action_result.status",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.comment",
+                    "data_type": "string",
+                    "example_values": [
+                        "Test comment"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.id",
                     "data_type": "string",
+                    "column_name": "Ticket ID",
+                    "column_order": 0,
                     "contains": [
                         "rt ticket id"
+                    ],
+                    "example_values": [
+                        "3960"
                     ]
                 },
                 {
                     "data_path": "action_result.parameter.vault_id",
                     "data_type": "string",
+                    "column_name": "Vault ID",
+                    "column_order": 1,
                     "contains": [
                         "vault id"
+                    ],
+                    "example_values": [
+                        "4c309a10150910b52212e53c3f8098fc54d170c1"
                     ]
-                },
-                {
-                    "data_path": "action_result.parameter.comment",
-                    "data_type": "string"
                 },
                 {
                     "data_path": "action_result.data",
@@ -992,14 +1351,44 @@
                 },
                 {
                     "data_path": "summary.total_objects",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects_successful",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 }
             ],
             "versions": "EQ(*)"
         }
-    ]
+    ],
+    "pip_dependencies": {
+        "wheel": [
+            {
+                "module": "certifi",
+                "input_file": "wheels/certifi-2021.10.8-py2.py3-none-any.whl"
+            },
+            {
+                "module": "chardet",
+                "input_file": "wheels/chardet-3.0.4-py2.py3-none-any.whl"
+            },
+            {
+                "module": "idna",
+                "input_file": "wheels/idna-2.10-py2.py3-none-any.whl"
+            },
+            {
+                "module": "requests",
+                "input_file": "wheels/requests-2.25.0-py2.py3-none-any.whl"
+            },
+            {
+                "module": "urllib3",
+                "input_file": "wheels/urllib3-1.26.8-py2.py3-none-any.whl"
+            }
+        ]
+    }
 }
