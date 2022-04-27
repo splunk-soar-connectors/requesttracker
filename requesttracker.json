@@ -5,7 +5,7 @@
     "publisher": "Splunk",
     "type": "ticketing",
     "main_module": "requesttracker_connector.py",
-    "app_version": "2.1.2",
+    "app_version": "2.1.3",
     "utctime_updated": "2022-02-02T09:20:19.000000Z",
     "package_name": "phantom_requesttracker",
     "product_vendor": "Best Practical Solutions",
