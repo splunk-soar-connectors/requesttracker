@@ -733,13 +733,18 @@ class RTConnector(BaseConnector):
         ticket_id = param[RT_JSON_ID]
         vault_id = param[RT_JSON_VAULT]
         comment = param.get('comment')
+        file_content_type = param.get('file_content_type')
 
         # Set default comment
         if not comment:
             comment = 'File uploaded from Phantom'
         else:
             comment = self.handle_multiline_text(comment)
-
+        
+        #Set default file_content_type
+        if not file_content_type:
+            file_content_type = 'application/octet-stream'
+            
         # Check for vault file
         _, _, file_info = vault_info(vault_id=vault_id, container_id=self.get_container_id())
 
@@ -753,7 +758,7 @@ class RTConnector(BaseConnector):
 
         # Create payload for request
         content = {'content': 'Action: comment\nText: {0}\nAttachment: {1}'.format(comment, file_info['name'])}
-        upfile = {'attachment_1': open(file_info['path'], 'rb')}
+        upfile = {'attachment_1': (file_info['name'], open(file_info['path'], 'rb'), file_content_type)}
 
         ret_val, resp_text = self._make_rest_call("ticket/{0}/comment".format(
             ticket_id), action_result, data=content, files=upfile, method='post')
