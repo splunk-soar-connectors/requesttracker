@@ -490,16 +490,18 @@ class RTConnector(BaseConnector):
 
     def _get_ticket(self, param):
 
+        self.save_progress("starting get tickets")
         # Create action results
         action_result = self.add_action_result(ActionResult(param))
 
+        self.debug_print("Creating rt session")
         # Create RT session
         if phantom.is_fail(self._create_rt_session(action_result)):
             return action_result.get_status()
 
         # get the ticket ID
         ticket_id = param[RT_JSON_ID]
-
+        self.debug_print("Getting ticket details")
         if phantom.is_fail(self._get_ticket_details(ticket_id, action_result)):
             return action_result.get_status()
 
