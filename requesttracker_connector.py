@@ -740,11 +740,11 @@ class RTConnector(BaseConnector):
             comment = 'File uploaded from Phantom'
         else:
             comment = self.handle_multiline_text(comment)
-        
-        #Set default file_content_type
+
+        # Set default file_content_type
         if not file_content_type:
             file_content_type = 'application/octet-stream'
-            
+
         # Check for vault file
         _, _, file_info = vault_info(vault_id=vault_id, container_id=self.get_container_id())
 
