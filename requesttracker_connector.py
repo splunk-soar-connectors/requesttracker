@@ -751,8 +751,7 @@ class RTConnector(BaseConnector):
         file_info = file_info[0]
 
         # Set mime_type
-        mime_type = file_info.get('mime_type', '')
-        file_content_type = mime_type if mime_type != '' else 'application/octet-stream'
+        file_content_type = file_info.get('mime_type', 'application/octet-stream')
 
         if not file_info['name']:
             file_info['name'] = vault_id
@@ -785,19 +784,19 @@ class RTConnector(BaseConnector):
 
         if action == self.ACTION_ID_CREATE_TICKET:
             ret_val = self._create_ticket(param)
-        elif (action == self.ACTION_ID_LIST_TICKETS):
+        elif action == self.ACTION_ID_LIST_TICKETS:
             ret_val = self._list_tickets(param)
-        elif (action == self.ACTION_ID_GET_TICKET):
+        elif action == self.ACTION_ID_GET_TICKET:
             ret_val = self._get_ticket(param)
-        elif (action == self.ACTION_ID_UPDATE_TICKET):
+        elif action == self.ACTION_ID_UPDATE_TICKET:
             ret_val = self._update_ticket(param)
-        elif (action == self.ACTION_ID_LIST_ATTACHMENTS):
+        elif action == self.ACTION_ID_LIST_ATTACHMENTS:
             ret_val = self._list_attachments(param)
-        elif (action == self.ACTION_ID_GET_ATTACHMENT):
+        elif action == self.ACTION_ID_GET_ATTACHMENT:
             ret_val = self._get_attachment(param)
-        elif (action == self.ACTION_ID_ADD_ATTACHMENT):
+        elif action == self.ACTION_ID_ADD_ATTACHMENT:
             ret_val = self._add_attachment(param)
-        elif (action == phantom.ACTION_ID_TEST_ASSET_CONNECTIVITY):
+        elif action == phantom.ACTION_ID_TEST_ASSET_CONNECTIVITY:
             ret_val = self._test_connectivity(param)
 
         return ret_val
