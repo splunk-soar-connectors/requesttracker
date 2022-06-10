@@ -1289,11 +1289,6 @@
                     "description": "Comment to include with upload",
                     "data_type": "string",
                     "order": 2
-                },
-                "file_content_type": {
-                    "description": "File content type eg. 'image/png'. <Common MIME types>",
-                    "data_type": "string",
-                    "order": 3
                 }
             },
             "render": {
@@ -1316,13 +1311,6 @@
                     "data_type": "string",
                     "example_values": [
                         "Test comment"
-                    ]
-                },
-                {
-                    "data_path": "action_result.parameter.file_content_type",
-                    "data_type": "string",
-                    "example_values": [
-                        "image/png"
                     ]
                 },
                 {

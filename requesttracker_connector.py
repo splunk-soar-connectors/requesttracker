@@ -735,17 +735,12 @@ class RTConnector(BaseConnector):
         ticket_id = param[RT_JSON_ID]
         vault_id = param[RT_JSON_VAULT]
         comment = param.get('comment')
-        file_content_type = param.get('file_content_type')
 
         # Set default comment
         if not comment:
             comment = 'File uploaded from Phantom'
         else:
             comment = self.handle_multiline_text(comment)
-
-        # Set default file_content_type
-        if not file_content_type:
-            file_content_type = 'application/octet-stream'
 
         # Check for vault file
         _, _, file_info = vault_info(vault_id=vault_id, container_id=self.get_container_id())
@@ -754,6 +749,10 @@ class RTConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, "Vault ID is invalid. Vault file not found")
 
         file_info = file_info[0]
+
+        # Set mime_type
+        mime_type = file_info.get('mime_type', '')
+        file_content_type = mime_type if mime_type != '' else 'application/octet-stream'
 
         if not file_info['name']:
             file_info['name'] = vault_id
@@ -784,7 +783,7 @@ class RTConnector(BaseConnector):
 
         ret_val = phantom.APP_SUCCESS
 
-        if (action == self.ACTION_ID_CREATE_TICKET):
+        if action == self.ACTION_ID_CREATE_TICKET:
             ret_val = self._create_ticket(param)
         elif (action == self.ACTION_ID_LIST_TICKETS):
             ret_val = self._list_tickets(param)
