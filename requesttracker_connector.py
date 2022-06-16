@@ -490,16 +490,18 @@ class RTConnector(BaseConnector):
 
     def _get_ticket(self, param):
 
+        self.save_progress("starting get tickets")
         # Create action results
         action_result = self.add_action_result(ActionResult(param))
 
+        self.debug_print("Creating rt session")
         # Create RT session
         if phantom.is_fail(self._create_rt_session(action_result)):
             return action_result.get_status()
 
         # get the ticket ID
         ticket_id = param[RT_JSON_ID]
-
+        self.debug_print("Getting ticket details")
         if phantom.is_fail(self._get_ticket_details(ticket_id, action_result)):
             return action_result.get_status()
 
@@ -748,12 +750,15 @@ class RTConnector(BaseConnector):
 
         file_info = file_info[0]
 
+        # Set mime_type
+        file_content_type = file_info.get('mime_type', 'application/octet-stream')
+
         if not file_info['name']:
             file_info['name'] = vault_id
 
         # Create payload for request
         content = {'content': 'Action: comment\nText: {0}\nAttachment: {1}'.format(comment, file_info['name'])}
-        upfile = {'attachment_1': open(file_info['path'], 'rb')}
+        upfile = {'attachment_1': (file_info['name'], open(file_info['path'], 'rb'), file_content_type)}
 
         ret_val, resp_text = self._make_rest_call("ticket/{0}/comment".format(
             ticket_id), action_result, data=content, files=upfile, method='post')
@@ -777,21 +782,21 @@ class RTConnector(BaseConnector):
 
         ret_val = phantom.APP_SUCCESS
 
-        if (action == self.ACTION_ID_CREATE_TICKET):
+        if action == self.ACTION_ID_CREATE_TICKET:
             ret_val = self._create_ticket(param)
-        elif (action == self.ACTION_ID_LIST_TICKETS):
+        elif action == self.ACTION_ID_LIST_TICKETS:
             ret_val = self._list_tickets(param)
-        elif (action == self.ACTION_ID_GET_TICKET):
+        elif action == self.ACTION_ID_GET_TICKET:
             ret_val = self._get_ticket(param)
-        elif (action == self.ACTION_ID_UPDATE_TICKET):
+        elif action == self.ACTION_ID_UPDATE_TICKET:
             ret_val = self._update_ticket(param)
-        elif (action == self.ACTION_ID_LIST_ATTACHMENTS):
+        elif action == self.ACTION_ID_LIST_ATTACHMENTS:
             ret_val = self._list_attachments(param)
-        elif (action == self.ACTION_ID_GET_ATTACHMENT):
+        elif action == self.ACTION_ID_GET_ATTACHMENT:
             ret_val = self._get_attachment(param)
-        elif (action == self.ACTION_ID_ADD_ATTACHMENT):
+        elif action == self.ACTION_ID_ADD_ATTACHMENT:
             ret_val = self._add_attachment(param)
-        elif (action == phantom.ACTION_ID_TEST_ASSET_CONNECTIVITY):
+        elif action == phantom.ACTION_ID_TEST_ASSET_CONNECTIVITY:
             ret_val = self._test_connectivity(param)
 
         return ret_val
