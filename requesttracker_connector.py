@@ -236,13 +236,13 @@ class RTConnector(BaseConnector):
                             headers=headers,
                             params=params)
         except Exception as e:
-            error_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             regex = r"pass=[^\s]*"
-            match = re.search(regex, error_msg).group()
+            match = re.search(regex, error_message).group()
             if match:
                 password_length = len(match)-5
-                error_msg = error_msg.replace(match, "pass="+"*"*password_length)
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_msg)), resp_json)
+                error_message = error_message.replace(match, "pass="+"*"*password_length)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_message)), resp_json)
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith('content'):
             return phantom.APP_SUCCESS, r
