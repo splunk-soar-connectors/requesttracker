@@ -1,6 +1,6 @@
 # File: requesttracker_connector.py
 #
-# Copyright (c) 2016-2022 Splunk Inc.
+# Copyright (c) 2016-2023 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -237,6 +237,11 @@ class RTConnector(BaseConnector):
                             params=params)
         except Exception as e:
             error_msg = self._get_error_message_from_exception(e)
+            regex = r"pass=[^\s]*"
+            match = re.search(regex, error_msg).group()
+            if match:
+                password_length = len(match)-5
+                error_msg = error_msg.replace(match, "pass="+"*"*password_length)
             return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_msg)), resp_json)
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith('content'):

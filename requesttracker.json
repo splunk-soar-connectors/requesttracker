@@ -5,20 +5,20 @@
     "publisher": "Splunk",
     "type": "ticketing",
     "main_module": "requesttracker_connector.py",
-    "app_version": "2.2.0",
+    "app_version": "2.3.0",
     "utctime_updated": "2022-02-02T09:20:19.000000Z",
     "package_name": "phantom_requesttracker",
     "product_vendor": "Best Practical Solutions",
     "product_name": "Request Tracker",
     "product_version_regex": ".*",
-    "min_phantom_version": "5.2.0",
+    "min_phantom_version": "5.5.0",
     "latest_tested_versions": [
         "On-prem, Version 4.2.11"
     ],
     "fips_compliant": true,
     "logo": "logo_bestpractical.svg",
     "logo_dark": "logo_bestpractical_dark.svg",
-    "license": "Copyright (c) 2016-2022 Splunk Inc.",
+    "license": "Copyright (c) 2016-2023 Splunk Inc.",
     "python_version": "3",
     "configuration": {
         "device_url": {
@@ -1185,7 +1185,7 @@
                     "column_name": "Path",
                     "column_order": 8,
                     "example_values": [
-                        "/opt/phantom/vault/41/e0/41e049c4c6aaa5a53f4c3f8e4f64d1d89f8300a3"
+                        "/opt/xyz/abc/41/e0/41e049c4c6aaa5a53f4c3f8e4f64d1d89f8300a3"
                     ]
                 },
                 {
@@ -1371,7 +1371,7 @@
         "wheel": [
             {
                 "module": "certifi",
-                "input_file": "wheels/py3/certifi-2022.5.18.1-py3-none-any.whl"
+                "input_file": "wheels/py3/certifi-2023.5.7-py3-none-any.whl"
             },
             {
                 "module": "chardet",
@@ -1387,7 +1387,7 @@
             },
             {
                 "module": "urllib3",
-                "input_file": "wheels/shared/urllib3-1.26.9-py2.py3-none-any.whl"
+                "input_file": "wheels/shared/urllib3-1.26.15-py2.py3-none-any.whl"
             }
         ]
     }
