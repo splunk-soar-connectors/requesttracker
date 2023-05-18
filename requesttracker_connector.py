@@ -240,8 +240,8 @@ class RTConnector(BaseConnector):
             regex = r"pass=[^\s]*"
             match = re.search(regex, error_message).group()
             if match:
-                password_length = len(match)-5
-                error_message = error_message.replace(match, "pass="+"*"*password_length)
+                password_length = len(match) - 5
+                error_message = error_message.replace(match, "pass=" + "*" * password_length)
             return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_message)), resp_json)  # noqa E501
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith('content'):
