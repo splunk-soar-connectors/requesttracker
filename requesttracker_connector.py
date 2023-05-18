@@ -82,8 +82,8 @@ class RTConnector(BaseConnector):
         :param e: Exception object
         :return: error message
         """
-        error_code = ERR_CODE_MSG
-        error_msg = ERR_MSG_UNAVAILABLE
+        error_code = ERROR_CODE_MSG
+        error_msg = ERROR_MSG_UNAVAILABLE
 
         try:
             if hasattr(e, "args"):
@@ -91,19 +91,19 @@ class RTConnector(BaseConnector):
                     error_code = e.args[0]
                     error_msg = e.args[1]
                 elif len(e.args) == 1:
-                    error_code = ERR_CODE_MSG
+                    error_code = ERROR_CODE_MSG
                     error_msg = e.args[0]
         except:
             self.debug_print("Error occurred while retrieving exception information")
 
         try:
-            if error_code in ERR_CODE_MSG:
+            if error_code in ERROR_CODE_MSG:
                 error_text = "Error Message: {}".format(error_msg)
             else:
                 error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
         except:
-            self.debug_print(PARSE_ERR_MSG)
-            error_text = PARSE_ERR_MSG
+            self.debug_print(PARSE_ERROR_MSG)
+            error_text = PARSE_ERROR_MSG
 
         return error_text
 
@@ -112,7 +112,7 @@ class RTConnector(BaseConnector):
         if response.status_code == 200:
             return RetVal(phantom.APP_SUCCESS, {})
 
-        return RetVal(action_result.set_status(phantom.APP_ERROR, RT_ERR_EMPTY_RESPONSE.format(code=response.status_code)), None)
+        return RetVal(action_result.set_status(phantom.APP_ERROR, RT_ERROR_EMPTY_RESPONSE.format(code=response.status_code)), None)
 
     def _process_text_response(self, response, action_result):
 
@@ -164,8 +164,8 @@ class RTConnector(BaseConnector):
         try:
             resp_json = r.json()
         except Exception as e:
-            error_msg = self._get_error_message_from_exception(e)
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(error_msg)), None)
+            error_message = self._get_error_message_from_exception(e)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(error_message)), None)
 
         # Please specify the status codes here
         if 200 <= r.status_code < 399:
@@ -236,13 +236,13 @@ class RTConnector(BaseConnector):
                             headers=headers,
                             params=params)
         except Exception as e:
-            error_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             regex = r"pass=[^\s]*"
-            match = re.search(regex, error_msg).group()
+            match = re.search(regex, error_message).group()
             if match:
                 password_length = len(match)-5
-                error_msg = error_msg.replace(match, "pass="+"*"*password_length)
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_msg)), resp_json)
+                error_message = error_message.replace(match, "pass="+"*"*password_length)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_message)), resp_json)  # noqa E501
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith('content'):
             return phantom.APP_SUCCESS, r
@@ -340,8 +340,8 @@ class RTConnector(BaseConnector):
                 if isinstance(fields, list):
                     fields = {key: value for x in fields for key, value in x.items()}
             except Exception as e:
-                error_msg = self._get_error_message_from_exception(e)
-                return action_result.set_status(phantom.APP_ERROR, 'Fields paramter is not valid JSON', error_msg)
+                error_message = self._get_error_message_from_exception(e)
+                return action_result.set_status(phantom.APP_ERROR, 'Fields paramter is not valid JSON', error_message)
         else:
             fields = {}
 
