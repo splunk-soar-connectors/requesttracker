@@ -149,7 +149,7 @@ class RTConnector(BaseConnector):
             split_lines = error_text.split('\n')
             split_lines = [x.strip() for x in split_lines if x.strip()]
             error_text = '\n'.join(split_lines)
-        except:  # noqa
+        except Exception:  # noqa
             error_text = "Cannot parse error details"
 
         message = "Status Code: {0}. Data from server:\n{1}\n".format(status_code, error_text)
@@ -236,13 +236,13 @@ class RTConnector(BaseConnector):
                             headers=headers,
                             params=params)
         except Exception as e:
-            error_message = self._get_error_message_from_exception(e)
+            error_msg = self._get_error_message_from_exception(e)
             regex = r"pass=[^\s]*"
-            match = re.search(regex, error_message).group()
+            match = re.search(regex, error_msg).group()
             if match:
                 password_length = len(match)-5
-                error_message = error_message.replace(match, "pass="+"*"*password_length)
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_message)), resp_json)
+                error_msg = error_msg.replace(match, "pass="+"*"*password_length)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_msg)), resp_json)
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith('content'):
             return phantom.APP_SUCCESS, r
