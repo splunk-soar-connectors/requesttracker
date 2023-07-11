@@ -61,7 +61,7 @@ class RTConnector(BaseConnector):
         config = self.get_config()
 
         # Grab config variables
-        request_url = config[RT_JSON_DEVICE_URL].strip("/")
+        request_url = config[RT_JSON_DEVICE_URL].strip("/").strip("\\")
         self._base_url = '{0}/REST/1.0/'.format(request_url)
         self._host = self._base_url[request_url.find('//') + 2:]
         self._username = config.get(phantom.APP_JSON_USERNAME)
