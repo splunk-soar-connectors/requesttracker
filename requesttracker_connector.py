@@ -61,8 +61,9 @@ class RTConnector(BaseConnector):
         config = self.get_config()
 
         # Grab config variables
-        self._base_url = '{0}/REST/1.0/'.format(config[RT_JSON_DEVICE_URL])
-        self._host = self._base_url[config[RT_JSON_DEVICE_URL].find('//') + 2:]
+        request_url = config[RT_JSON_DEVICE_URL].strip("/")
+        self._base_url = '{0}/REST/1.0/'.format(request_url)
+        self._host = self._base_url[request_url.find('//') + 2:]
         self._username = config.get(phantom.APP_JSON_USERNAME)
         self._password = config.get(phantom.APP_JSON_PASSWORD)
 
@@ -237,11 +238,7 @@ class RTConnector(BaseConnector):
                             params=params)
         except Exception as e:
             error_message = self._get_error_message_from_exception(e)
-            regex = r"pass=[^\s]*"
-            match = re.search(regex, error_message).group()
-            if match:
-                password_length = len(match) - 5
-                error_message = error_message.replace(match, "pass=" + "*" * password_length)
+            error_message = re.sub(r"pass=[^\s]*", "pass=[masked]", error_message)
             return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_message)), resp_json)  # noqa E501
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith('content'):
