@@ -94,7 +94,7 @@ class RTConnector(BaseConnector):
                 elif len(e.args) == 1:
                     error_code = ERROR_CODE_MSG
                     error_msg = e.args[0]
-        except:
+        except Exception:
             self.debug_print("Error occurred while retrieving exception information")
 
         try:
@@ -102,7 +102,7 @@ class RTConnector(BaseConnector):
                 error_text = "Error Message: {}".format(error_msg)
             else:
                 error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
-        except:
+        except Exception:
             self.debug_print(PARSE_ERROR_MSG)
             error_text = PARSE_ERROR_MSG
 
@@ -237,9 +237,12 @@ class RTConnector(BaseConnector):
                             headers=headers,
                             params=params)
         except Exception as e:
-            error_message = self._get_error_message_from_exception(e)
             error_message = re.sub(r"pass=[^\s]*", "pass=[masked]", error_message)
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_message)), resp_json)  # noqa E501
+            return RetVal(action_result.set_status(
+                phantom.APP_ERROR,
+                "Error Connecting to server. Details: {0}".format(self._get_error_message_from_exception(e))),
+                resp_json
+            )
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith('content'):
             return phantom.APP_SUCCESS, r
@@ -264,7 +267,7 @@ class RTConnector(BaseConnector):
                 return True
             else:
                 return False
-        except:
+        except Exception:
             return False
 
     def handle_multiline_text(self, text):
