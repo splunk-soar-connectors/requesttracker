@@ -105,7 +105,7 @@ class RTConnector(BaseConnector):
         except Exception:
             self.debug_print(PARSE_ERROR_MSG)
             error_text = PARSE_ERROR_MSG
-
+        error_text = re.sub(r"pass=[^\s]*", "pass=[masked]", error_text)
         return error_text
 
     def _process_empty_reponse(self, response, action_result):
@@ -237,12 +237,8 @@ class RTConnector(BaseConnector):
                             headers=headers,
                             params=params)
         except Exception as e:
-            error_message = re.sub(r"pass=[^\s]*", "pass=[masked]", error_message)
             return RetVal(action_result.set_status(
-                phantom.APP_ERROR,
-                "Error Connecting to server. Details: {0}".format(self._get_error_message_from_exception(e))),
-                resp_json
-            )
+                phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(self._get_error_message_from_exception(e))), resp_json)  # noqa E501
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith('content'):
             return phantom.APP_SUCCESS, r
