@@ -106,7 +106,6 @@ class RTConnector(BaseConnector):
         error_text = re.sub(r"pass=[^\s]*", "pass=[masked]", error_text)
         return error_text
 
-
     def _process_empty_reponse(self, response, action_result):
 
         if response.status_code == 200:
