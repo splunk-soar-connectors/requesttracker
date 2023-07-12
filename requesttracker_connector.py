@@ -84,7 +84,7 @@ class RTConnector(BaseConnector):
         """
 
         error_code = None
-        error_msg = ERR_MSG_UNAVAILABLE
+        error_msg = ERROR_MSG_UNAVAILABLE
 
         self.error_print("Error occurred.", e)
 
