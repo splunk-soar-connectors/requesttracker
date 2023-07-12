@@ -79,12 +79,14 @@ class RTConnector(BaseConnector):
     def _get_error_message_from_exception(self, e):
         """
         Get appropriate error message from the exception.
-
         :param e: Exception object
         :return: error message
         """
-        error_code = ERROR_CODE_MSG
-        error_msg = ERROR_MSG_UNAVAILABLE
+
+        error_code = None
+        error_msg = ERR_MSG_UNAVAILABLE
+
+        self.error_print("Error occurred.", e)
 
         try:
             if hasattr(e, "args"):
@@ -92,21 +94,18 @@ class RTConnector(BaseConnector):
                     error_code = e.args[0]
                     error_msg = e.args[1]
                 elif len(e.args) == 1:
-                    error_code = ERROR_CODE_MSG
                     error_msg = e.args[0]
-        except Exception:
-            self.debug_print("Error occurred while retrieving exception information")
+        except Exception as e:
+            self.error_print("Error occurred while fetching exception information. Details: {}".format(str(e)))
 
-        try:
-            if error_code in ERROR_CODE_MSG:
-                error_text = "Error Message: {}".format(error_msg)
-            else:
-                error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
-        except Exception:
-            self.debug_print(PARSE_ERROR_MSG)
-            error_text = PARSE_ERROR_MSG
+        if not error_code:
+            error_text = "Error Message: {}".format(error_msg)
+        else:
+            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
+
         error_text = re.sub(r"pass=[^\s]*", "pass=[masked]", error_text)
         return error_text
+
 
     def _process_empty_reponse(self, response, action_result):
 

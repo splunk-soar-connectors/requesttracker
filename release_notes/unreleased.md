@@ -1,2 +1,2 @@
 **Unreleased**
-* Added masking password while action is failing [PAPP-30577]
+* Improved error logging [PAPP-30577]
