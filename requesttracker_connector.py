@@ -61,7 +61,7 @@ class RTConnector(BaseConnector):
         config = self.get_config()
 
         # Grab config variables
-        request_url = config[RT_JSON_DEVICE_URL].strip("/").strip("\\")
+        request_url = config[RT_JSON_DEVICE_URL].strip("/")
         self._base_url = '{0}/REST/1.0/'.format(request_url)
         self._host = self._base_url[request_url.find('//') + 2:]
         self._username = config.get(phantom.APP_JSON_USERNAME)
@@ -137,7 +137,7 @@ class RTConnector(BaseConnector):
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
-    def _process_html_response(self, r, action_result):
+    def _process_html_response(self, response, action_result):
 
         # An html response, treat it like an error
         status_code = response.status_code
