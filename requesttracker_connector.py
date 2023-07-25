@@ -1,6 +1,6 @@
 # File: requesttracker_connector.py
 #
-# Copyright (c) 2016-2022 Splunk Inc.
+# Copyright (c) 2016-2023 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,8 +61,9 @@ class RTConnector(BaseConnector):
         config = self.get_config()
 
         # Grab config variables
-        self._base_url = '{0}/REST/1.0/'.format(config[RT_JSON_DEVICE_URL])
-        self._host = self._base_url[config[RT_JSON_DEVICE_URL].find('//') + 2:]
+        request_url = config[RT_JSON_DEVICE_URL].strip("/")
+        self._base_url = '{0}/REST/1.0/'.format(request_url)
+        self._host = self._base_url[request_url.find('//') + 2:]
         self._username = config.get(phantom.APP_JSON_USERNAME)
         self._password = config.get(phantom.APP_JSON_PASSWORD)
 
@@ -78,12 +79,14 @@ class RTConnector(BaseConnector):
     def _get_error_message_from_exception(self, e):
         """
         Get appropriate error message from the exception.
-
         :param e: Exception object
         :return: error message
         """
-        error_code = ERR_CODE_MSG
-        error_msg = ERR_MSG_UNAVAILABLE
+
+        error_code = None
+        error_msg = ERROR_MSG_UNAVAILABLE
+
+        self.error_print("Error occurred.", e)
 
         try:
             if hasattr(e, "args"):
@@ -91,20 +94,16 @@ class RTConnector(BaseConnector):
                     error_code = e.args[0]
                     error_msg = e.args[1]
                 elif len(e.args) == 1:
-                    error_code = ERR_CODE_MSG
                     error_msg = e.args[0]
-        except:
-            self.debug_print("Error occurred while retrieving exception information")
+        except Exception as e:
+            self.error_print("Error occurred while fetching exception information. Details: {}".format(str(e)))
 
-        try:
-            if error_code in ERR_CODE_MSG:
-                error_text = "Error Message: {}".format(error_msg)
-            else:
-                error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
-        except:
-            self.debug_print(PARSE_ERR_MSG)
-            error_text = PARSE_ERR_MSG
+        if not error_code:
+            error_text = "Error Message: {}".format(error_msg)
+        else:
+            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
 
+        error_text = re.sub(r"pass=[^\s]*", "pass=[masked]", error_text)
         return error_text
 
     def _process_empty_reponse(self, response, action_result):
@@ -112,7 +111,7 @@ class RTConnector(BaseConnector):
         if response.status_code == 200:
             return RetVal(phantom.APP_SUCCESS, {})
 
-        return RetVal(action_result.set_status(phantom.APP_ERROR, RT_ERR_EMPTY_RESPONSE.format(code=response.status_code)), None)
+        return RetVal(action_result.set_status(phantom.APP_ERROR, RT_ERROR_EMPTY_RESPONSE.format(code=response.status_code)), None)
 
     def _process_text_response(self, response, action_result):
 
@@ -138,7 +137,7 @@ class RTConnector(BaseConnector):
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
-    def _process_html_response(self, r, action_result):
+    def _process_html_response(self, response, action_result):
 
         # An html response, treat it like an error
         status_code = response.status_code
@@ -149,7 +148,7 @@ class RTConnector(BaseConnector):
             split_lines = error_text.split('\n')
             split_lines = [x.strip() for x in split_lines if x.strip()]
             error_text = '\n'.join(split_lines)
-        except:  # noqa
+        except Exception:  # noqa
             error_text = "Cannot parse error details"
 
         message = "Status Code: {0}. Data from server:\n{1}\n".format(status_code, error_text)
@@ -164,8 +163,8 @@ class RTConnector(BaseConnector):
         try:
             resp_json = r.json()
         except Exception as e:
-            error_msg = self._get_error_message_from_exception(e)
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(error_msg)), None)
+            error_message = self._get_error_message_from_exception(e)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(error_message)), None)
 
         # Please specify the status codes here
         if 200 <= r.status_code < 399:
@@ -236,8 +235,8 @@ class RTConnector(BaseConnector):
                             headers=headers,
                             params=params)
         except Exception as e:
-            error_msg = self._get_error_message_from_exception(e)
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(error_msg)), resp_json)
+            return RetVal(action_result.set_status(
+                phantom.APP_ERROR, "Error Connecting to server. Details: {0}".format(self._get_error_message_from_exception(e))), resp_json)  # noqa E501
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith('content'):
             return phantom.APP_SUCCESS, r
@@ -262,7 +261,7 @@ class RTConnector(BaseConnector):
                 return True
             else:
                 return False
-        except:
+        except Exception:
             return False
 
     def handle_multiline_text(self, text):
@@ -335,8 +334,8 @@ class RTConnector(BaseConnector):
                 if isinstance(fields, list):
                     fields = {key: value for x in fields for key, value in x.items()}
             except Exception as e:
-                error_msg = self._get_error_message_from_exception(e)
-                return action_result.set_status(phantom.APP_ERROR, 'Fields paramter is not valid JSON', error_msg)
+                error_message = self._get_error_message_from_exception(e)
+                return action_result.set_status(phantom.APP_ERROR, 'Fields paramter is not valid JSON', error_message)
         else:
             fields = {}
 
