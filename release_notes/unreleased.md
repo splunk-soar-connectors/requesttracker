@@ -1,2 +1,2 @@
 **Unreleased**
-* Removing unused const detected as a bug with vault path [PAPP-32420]
+* Solving bug with path to the vault temp directory [PAPP-32420]
