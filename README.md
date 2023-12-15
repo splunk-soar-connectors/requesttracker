@@ -2,7 +2,7 @@
 # Request Tracker
 
 Publisher: Splunk  
-Connector Version: 2.3.0  
+Connector Version: 2.3.1  
 Product Vendor: Best Practical Solutions  
 Product Name: Request Tracker  
 Product Version Supported (regex): ".\*"  
