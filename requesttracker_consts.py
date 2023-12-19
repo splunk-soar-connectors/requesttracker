@@ -55,7 +55,6 @@ DEFAULT_PRIORITY = "0"
 DEFAULT_QUEUE = "1"
 DEFAULT_TIMEOUT = 30
 RT_TICKET_FOOTNOTE = "Added by Phantom for container id: "
-PHANTOM_VAULT_DIR = "/opt/phantom/vault/tmp/"
 
 # Constants relating to 'get_error_message_from_exception'
 ERROR_CODE_MSG = "Error code unavailable"
