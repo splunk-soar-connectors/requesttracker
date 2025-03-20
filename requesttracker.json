@@ -18,7 +18,7 @@
     "fips_compliant": true,
     "logo": "logo_bestpractical.svg",
     "logo_dark": "logo_bestpractical_dark.svg",
-    "license": "Copyright (c) 2016-2023 Splunk Inc.",
+    "license": "Copyright (c) 2016-2025 Splunk Inc.",
     "python_version": "3",
     "configuration": {
         "device_url": {
