@@ -19,7 +19,7 @@
     "logo": "logo_bestpractical.svg",
     "logo_dark": "logo_bestpractical_dark.svg",
     "license": "Copyright (c) 2016-2025 Splunk Inc.",
-    "python_version": "3",
+    "python_version": "3.9, 3.13",
     "configuration": {
         "device_url": {
             "data_type": "string",
@@ -1366,5 +1366,11 @@
             ],
             "versions": "EQ(*)"
         }
-    ]
+    ],
+    "pip39_dependencies": {
+        "wheel": []
+    },
+    "pip313_dependencies": {
+        "wheel": []
+    }
 }
