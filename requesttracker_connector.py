@@ -1,6 +1,6 @@
 # File: requesttracker_connector.py
 #
-# Copyright (c) 2016-2025 Splunk Inc.
+# Copyright (c) 2016-2026 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -236,7 +236,7 @@ class RTConnector(BaseConnector):
         if self._username and self._password:
             params = {"user": self._username, "pass": self._password}
 
-        ret_val, response = self._make_rest_call("", action_result, params=params, headers=None)
+        ret_val, _response = self._make_rest_call("", action_result, params=params, headers=None)
 
         return ret_val
 
@@ -728,7 +728,7 @@ class RTConnector(BaseConnector):
         content = {"content": "Action: comment\nText: {}\nAttachment: {}".format(comment, file_info["name"])}
         upfile = {"attachment_1": (file_info["name"], open(file_info["path"], "rb"), file_content_type)}
 
-        ret_val, resp_text = self._make_rest_call(f"ticket/{ticket_id}/comment", action_result, data=content, files=upfile, method="post")
+        ret_val, _resp_text = self._make_rest_call(f"ticket/{ticket_id}/comment", action_result, data=content, files=upfile, method="post")
 
         if phantom.is_fail(ret_val):
             return ret_val
