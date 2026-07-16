@@ -1,3 +1,3 @@
 **Unreleased**
 
-* Updated development tooling. (PAPP-37978)
+* Fixed credential handling to keep passwords out of request URLs and diagnostic logs. (PAPP-37978)

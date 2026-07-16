@@ -83,8 +83,6 @@ class RTConnector(BaseConnector):
         error_code = None
         error_msg = ERROR_MSG_UNAVAILABLE
 
-        self.error_print("Error occurred.", e)
-
         try:
             if hasattr(e, "args"):
                 if len(e.args) > 1:
@@ -101,6 +99,7 @@ class RTConnector(BaseConnector):
             error_text = f"Error Code: {error_code}. Error Message: {error_msg}"
 
         error_text = re.sub(r"pass=[^\s]*", "pass=[masked]", error_text)
+        self.error_print("Error occurred.", error_text)
         return error_text
 
     def _process_empty_reponse(self, response, action_result):
@@ -232,11 +231,11 @@ class RTConnector(BaseConnector):
         return self._process_response(r, action_result)
 
     def _create_rt_session(self, action_result):
-        params = None
+        data = None
         if self._username and self._password:
-            params = {"user": self._username, "pass": self._password}
+            data = {"user": self._username, "pass": self._password}
 
-        ret_val, _response = self._make_rest_call("", action_result, params=params, headers=None)
+        ret_val, _response = self._make_rest_call("", action_result, data=data, headers=None, method="post")
 
         return ret_val
 
