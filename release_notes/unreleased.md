@@ -4,3 +4,4 @@
 * Rejected attachment filenames containing line breaks to prevent RT field injection. (PAPP-37978)
 * Reclassified get attachment as a vault-writing action subject to normal execution controls. (PAPP-37978)
 * Prevented get attachment from vaulting HTTP error responses as file content. (PAPP-37978)
+* Reported RT in-body rejections from update ticket and add attachment actions as failures. (PAPP-37978)

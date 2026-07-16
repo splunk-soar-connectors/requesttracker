@@ -293,6 +293,28 @@ class RTConnector(BaseConnector):
         self.save_progress("Test Connectivity Passed")
         return phantom.APP_SUCCESS
 
+    def _check_rt_write_rejection(self, resp_text, action_result, operation):
+        rejection_markers = (
+            "not allowed",
+            "syntax error",
+            "illegal value",
+            "does not exist",
+            "could not",
+            "permission denied",
+            "credentials required",
+            "invalid",
+        )
+        for line in (resp_text or "").splitlines():
+            if not line.startswith("#"):
+                continue
+            lowered = line.lower()
+            if "unknown field" in lowered:
+                continue
+            if any(marker in lowered for marker in rejection_markers):
+                detail = line.lstrip("# ").strip()
+                return action_result.set_status(phantom.APP_ERROR, f"RT rejected the {operation}: {detail}")
+        return phantom.APP_SUCCESS
+
     def _update_ticket(self, param):
         action_result = self.add_action_result(ActionResult(param))
 
@@ -344,6 +366,9 @@ class RTConnector(BaseConnector):
                 if line.startswith("#") and "Unknown field" in line:
                     self.debug_print("WARNING: {} is an unknown field and was not included in ticket update".format(line.split(":")[0][2:]))
 
+            if phantom.is_fail(self._check_rt_write_rejection(resp_text, action_result, "ticket edit")):
+                return action_result.get_status()
+
         if comment:
             self.save_progress("Adding comment")
 
@@ -357,6 +382,9 @@ class RTConnector(BaseConnector):
 
             if phantom.is_fail(ret_val):
                 return ret_val
+
+            if phantom.is_fail(self._check_rt_write_rejection(resp_text, action_result, "ticket comment")):
+                return action_result.get_status()
 
         self.save_progress("Ticket updated")
 
@@ -735,10 +763,13 @@ class RTConnector(BaseConnector):
         content = {"content": "Action: comment\nText: {}\nAttachment: {}".format(comment, file_info["name"])}
         upfile = {"attachment_1": (file_info["name"], open(file_info["path"], "rb"), file_content_type)}
 
-        ret_val, _resp_text = self._make_rest_call(f"ticket/{ticket_id}/comment", action_result, data=content, files=upfile, method="post")
+        ret_val, resp_text = self._make_rest_call(f"ticket/{ticket_id}/comment", action_result, data=content, files=upfile, method="post")
 
         if phantom.is_fail(ret_val):
             return ret_val
+
+        if phantom.is_fail(self._check_rt_write_rejection(resp_text, action_result, "attachment comment")):
+            return action_result.get_status()
 
         return action_result.set_status(phantom.APP_SUCCESS, RT_SUCC_ADD_ATTACHMENT)
 
