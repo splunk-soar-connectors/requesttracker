@@ -723,6 +723,9 @@ class RTConnector(BaseConnector):
         if not file_info["name"]:
             file_info["name"] = vault_id
 
+        if "\r" in file_info["name"] or "\n" in file_info["name"]:
+            return action_result.set_status(phantom.APP_ERROR, "Vault file name cannot contain line breaks")
+
         # Create payload for request
         content = {"content": "Action: comment\nText: {}\nAttachment: {}".format(comment, file_info["name"])}
         upfile = {"attachment_1": (file_info["name"], open(file_info["path"], "rb"), file_content_type)}
