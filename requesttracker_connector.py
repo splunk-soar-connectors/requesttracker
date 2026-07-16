@@ -226,7 +226,12 @@ class RTConnector(BaseConnector):
             )
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith("content"):
-            return phantom.APP_SUCCESS, r
+            if 200 <= r.status_code < 300:
+                return phantom.APP_SUCCESS, r
+            message = "Error downloading attachment content. Status Code: {} Data from server: {}".format(
+                r.status_code, r.text.replace("{", "{{").replace("}", "}}")
+            )
+            return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
         return self._process_response(r, action_result)
 
@@ -651,11 +656,11 @@ class RTConnector(BaseConnector):
         # Request the attachment content
         ret_val, response = self._make_rest_call(f"ticket/{ticket_id}/attachments/{attachment_id}/content", action_result)
 
-        # Convert to bytes and strip away headers and trailers.
-        content = response.content
-
         if phantom.is_fail(ret_val):
             return ret_val
+
+        # Convert to bytes and strip away headers and trailers.
+        content = response.content
 
         # find first newline
         skip = content.find(b"\n")
