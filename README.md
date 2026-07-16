@@ -280,8 +280,8 @@ summary.total_objects_successful | numeric | | 1 |
 
 Download attachment to vault
 
-Type: **investigate** <br>
-Read only: **True**
+Type: **generic** <br>
+Read only: **False**
 
 #### Action Parameters
 
