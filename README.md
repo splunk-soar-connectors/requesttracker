@@ -1,7 +1,7 @@
 # Request Tracker
 
 Publisher: Splunk <br>
-Connector Version: 2.3.2 <br>
+Connector Version: 2.3.3 <br>
 Product Vendor: Best Practical Solutions <br>
 Product Name: Request Tracker <br>
 Minimum Product Version: 6.1.1
