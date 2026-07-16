@@ -1,6 +1,6 @@
 # File: requesttracker_connector.py
 #
-# Copyright (c) 2016-2025 Splunk Inc.
+# Copyright (c) 2016-2026 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,8 +83,6 @@ class RTConnector(BaseConnector):
         error_code = None
         error_msg = ERROR_MSG_UNAVAILABLE
 
-        self.error_print("Error occurred.", e)
-
         try:
             if hasattr(e, "args"):
                 if len(e.args) > 1:
@@ -101,6 +99,7 @@ class RTConnector(BaseConnector):
             error_text = f"Error Code: {error_code}. Error Message: {error_msg}"
 
         error_text = re.sub(r"pass=[^\s]*", "pass=[masked]", error_text)
+        self.error_print("Error occurred.", error_text)
         return error_text
 
     def _process_empty_reponse(self, response, action_result):
@@ -227,16 +226,21 @@ class RTConnector(BaseConnector):
             )
 
         if self.get_action_identifier() == self.ACTION_ID_GET_ATTACHMENT and endpoint.endswith("content"):
-            return phantom.APP_SUCCESS, r
+            if 200 <= r.status_code < 300:
+                return phantom.APP_SUCCESS, r
+            message = "Error downloading attachment content. Status Code: {} Data from server: {}".format(
+                r.status_code, r.text.replace("{", "{{").replace("}", "}}")
+            )
+            return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
         return self._process_response(r, action_result)
 
     def _create_rt_session(self, action_result):
-        params = None
+        data = None
         if self._username and self._password:
-            params = {"user": self._username, "pass": self._password}
+            data = {"user": self._username, "pass": self._password}
 
-        ret_val, response = self._make_rest_call("", action_result, params=params, headers=None)
+        ret_val, _response = self._make_rest_call("", action_result, data=data, headers=None, method="post")
 
         return ret_val
 
@@ -287,6 +291,28 @@ class RTConnector(BaseConnector):
             return phantom.APP_ERROR
 
         self.save_progress("Test Connectivity Passed")
+        return phantom.APP_SUCCESS
+
+    def _check_rt_write_rejection(self, resp_text, action_result, operation):
+        rejection_markers = (
+            "not allowed",
+            "syntax error",
+            "illegal value",
+            "does not exist",
+            "could not",
+            "permission denied",
+            "credentials required",
+            "invalid",
+        )
+        for line in (resp_text or "").splitlines():
+            if not line.startswith("#"):
+                continue
+            lowered = line.lower()
+            if "unknown field" in lowered:
+                continue
+            if any(marker in lowered for marker in rejection_markers):
+                detail = line.lstrip("# ").strip()
+                return action_result.set_status(phantom.APP_ERROR, f"RT rejected the {operation}: {detail}")
         return phantom.APP_SUCCESS
 
     def _update_ticket(self, param):
@@ -340,6 +366,9 @@ class RTConnector(BaseConnector):
                 if line.startswith("#") and "Unknown field" in line:
                     self.debug_print("WARNING: {} is an unknown field and was not included in ticket update".format(line.split(":")[0][2:]))
 
+            if phantom.is_fail(self._check_rt_write_rejection(resp_text, action_result, "ticket edit")):
+                return action_result.get_status()
+
         if comment:
             self.save_progress("Adding comment")
 
@@ -353,6 +382,9 @@ class RTConnector(BaseConnector):
 
             if phantom.is_fail(ret_val):
                 return ret_val
+
+            if phantom.is_fail(self._check_rt_write_rejection(resp_text, action_result, "ticket comment")):
+                return action_result.get_status()
 
         self.save_progress("Ticket updated")
 
@@ -652,11 +684,11 @@ class RTConnector(BaseConnector):
         # Request the attachment content
         ret_val, response = self._make_rest_call(f"ticket/{ticket_id}/attachments/{attachment_id}/content", action_result)
 
-        # Convert to bytes and strip away headers and trailers.
-        content = response.content
-
         if phantom.is_fail(ret_val):
             return ret_val
+
+        # Convert to bytes and strip away headers and trailers.
+        content = response.content
 
         # find first newline
         skip = content.find(b"\n")
@@ -724,6 +756,9 @@ class RTConnector(BaseConnector):
         if not file_info["name"]:
             file_info["name"] = vault_id
 
+        if "\r" in file_info["name"] or "\n" in file_info["name"]:
+            return action_result.set_status(phantom.APP_ERROR, "Vault file name cannot contain line breaks")
+
         # Create payload for request
         content = {"content": "Action: comment\nText: {}\nAttachment: {}".format(comment, file_info["name"])}
         upfile = {"attachment_1": (file_info["name"], open(file_info["path"], "rb"), file_content_type)}
@@ -732,6 +767,9 @@ class RTConnector(BaseConnector):
 
         if phantom.is_fail(ret_val):
             return ret_val
+
+        if phantom.is_fail(self._check_rt_write_rejection(resp_text, action_result, "attachment comment")):
+            return action_result.get_status()
 
         return action_result.set_status(phantom.APP_SUCCESS, RT_SUCC_ADD_ATTACHMENT)
 
