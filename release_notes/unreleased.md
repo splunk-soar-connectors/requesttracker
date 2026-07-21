@@ -1,1 +1,4 @@
 **Unreleased**
+
+* Preserve embedded line breaks as RT continuation text when creating or updating tickets.
+* Report empty Request Tracker attachment lists without an action error.

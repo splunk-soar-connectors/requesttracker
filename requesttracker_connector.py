@@ -256,6 +256,8 @@ class RTConnector(BaseConnector):
 
     def handle_multiline_text(self, text):
         # Function to handle multiline text properly
+        text = str(text).replace("\r\n", "\n").replace("\r", "\n")
+
         if "\n" in text:
             text = text.replace("\n", "\n ")
 
@@ -266,6 +268,8 @@ class RTConnector(BaseConnector):
 
     def handle_multiline_subject(self, subject):
         # Function to handle multiline subject properly
+        subject = str(subject).replace("\r\n", "\n").replace("\r", "\n")
+
         if "\n" in subject:
             subject_text_list = [text.strip() for text in subject.split("\n")]
             subject = " ".join(subject_text_list)
@@ -352,7 +356,7 @@ class RTConnector(BaseConnector):
 
         if fields:
             # Create the content string
-            content = {"content": "\n".join([f"{k}: {v}" for k, v in fields.items()])}
+            content = {"content": "\n".join([f"{self.handle_multiline_subject(k)}: {self.handle_multiline_text(v)}" for k, v in fields.items()])}
 
             # Send the edit post request
             ret_val, resp_text = self._make_rest_call(f"ticket/{ticket_id}/edit", action_result, data=content, method="post")
@@ -407,6 +411,9 @@ class RTConnector(BaseConnector):
         priority = param.get(RT_JSON_PRIORITY, DEFAULT_PRIORITY)
         owner = param.get(RT_JSON_OWNER)
 
+        queue = self.handle_multiline_subject(queue)
+        priority = self.handle_multiline_subject(priority)
+        owner = self.handle_multiline_subject(owner)
         subject = self.handle_multiline_subject(subject)
         text = self.handle_multiline_text(text)
 
@@ -581,14 +588,14 @@ class RTConnector(BaseConnector):
 
         # Find the start of the attachments list
         resp_text = resp_text.strip()
-        attachment_index = resp_text.index("Attachments:")
+        attachment_index = resp_text.find("Attachments:")
 
         if attachment_index == -1:
             self.save_progress(f"No attachments found for ticket id '{ticket_id}'")
             return action_result.set_status(phantom.APP_SUCCESS)
 
         # Each attachment it on a separate line in the third "block" of text
-        attachments = [x.strip() for x in resp_text[attachment_index:].split("\n")]
+        attachments = [x.strip() for x in resp_text[attachment_index + len("Attachments:") :].split("\n") if x.strip()]
 
         # Set the summary
         action_result.set_summary({"attachments": len(attachments)})
@@ -598,9 +605,6 @@ class RTConnector(BaseConnector):
             self.save_progress(f"No attachments found for ticket id '{ticket_id}'")
             return action_result.set_status(phantom.APP_SUCCESS)
 
-        # The first line of the attachments block starts with "Attachments: "
-        attachments[0] = attachments[0][13:]
-
         # Get the attachment metadata
         # Each line has the form "<attachment_id>: <file_name> (<content_type> / <size>)"
         # The file name could have spaces and parentheses which makes this difficult
@@ -609,7 +613,11 @@ class RTConnector(BaseConnector):
             data = {}
 
             data["ticket_id"] = ticket_id
-            data["attachment_id"] = re.findall(r"\d+:", attachment)[0][:-1]
+            attachment_id_match = re.match(r"(\d+):", attachment)
+            if not attachment_id_match:
+                return action_result.set_status(phantom.APP_ERROR, "Unable to parse attachment details returned by Request Tracker")
+
+            data["attachment_id"] = attachment_id_match.group(1)
 
             start_path = attachment.find(":") + 2
             end_path = len(attachment) - attachment[::-1].find("(") - 2
